@@ -40,8 +40,13 @@ export default function BookingModal({ open, onClose, pkg, type }) {
         }
     }, [open, pkg, type]);
 
-    const total = useMemo(() => pkg?.price || 0, [pkg]);
-    const remaining = Math.max(total - DEPOSIT, 0);
+    const total = useMemo(() => {
+        if (!pkg) return 0;
+        const p = Number(form.participants) || 1;
+        return type === "family" ? pkg.price : pkg.price * p;
+    }, [pkg, type, form.participants]);
+    const depositToPay = Math.min(DEPOSIT, total);
+    const remaining = Math.max(total - depositToPay, 0);
 
     const handleChange = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -67,7 +72,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                 date: form.date,
                 time: form.time,
                 notes: form.notes,
-                deposit: DEPOSIT,
+                deposit: depositToPay,
             };
             await axios.post(`${API}/bookings`, payload);
             const wa = buildWhatsappUrl({
@@ -76,7 +81,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                 participants: payload.participants,
                 date: form.date,
                 time: form.time,
-                deposit: DEPOSIT,
+                deposit: depositToPay,
                 total,
                 lang,
             });
@@ -239,7 +244,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                                 {/* Cost summary */}
                                 <div className="rounded-md border border-white/10 p-4 space-y-2 bg-white/5">
                                     <Row label={t.booking.totalLabel} value={`$${total.toLocaleString()} MXN`} />
-                                    <Row label={t.booking.depositLabel} value={`$${DEPOSIT} MXN`} accent />
+                                    <Row label={t.booking.depositLabel} value={`$${depositToPay.toLocaleString()} MXN`} accent />
                                     <Row label={t.booking.remainingLabel} value={`$${remaining.toLocaleString()} MXN`} muted />
                                 </div>
 
