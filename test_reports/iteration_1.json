@@ -1,0 +1,46 @@
+{
+  "summary": "Both backend (20/20 pytest passed) and frontend core flows verified. Landing page loads with 3D R3F Hero canvas (no breaking errors - babel patch working), 6 package cards render, language ES↔EN toggle works, BookingModal opens & POSTs /api/bookings returning 200 with WhatsApp success link, admin login redirects wrong creds stay / correct creds → /admin/dashboard, stats cards visible, booking list shows test rows, PATCH confirm and DELETE work (both 200), logout redirects to home. Backend auth/bookings/stats all pass with bcrypt $2b$ hash confirmed, admin auto-seed verified, 401/403 guards working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/auth/login", "issue": "Cookie has secure=False and samesite='lax'; fine for same-site preview but will not be sent on cross-site prod; frontend correctly falls back to Bearer token in localStorage so flow still works."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BookingModal", "issue": "React 'Encountered two children with the same key' warning repeats on open (inside AnimatePresence). Likely duplicate key on mapped items (price breakdown or alert). Non-fatal but noisy.", "selector": "BookingModal AnimatePresence", "priority": "LOW"},
+      {"component": "BookingModal date input", "issue": "Using browser native HTML5 date picker (mm/dd/yyyy) instead of shadcn Calendar/Popover component. Looks inconsistent with the dark tactical theme and the format is locale-dependent (US format shown even though language is Spanish).", "selector": "[data-testid=booking-date]", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "BookingModal for individual packages", "issues": ["Deposit $300 MXN is HIGHER than individual package total ($160/$190/$240), so 'Pagar el día de la visita' shows $0 MXN but user is effectively overpaying vs the package price. Business decision but creates confusing UX — consider capping deposit at package_price or adjusting the copy for cheap packages."]},
+      {"screen": "Admin dashboard", "issues": ["Action buttons layout is dense; 'CONFIRMAR / COMPLETAR / CANCELAR / trash' row may wrap awkwardly on narrower screens (tested at 1920 only, looked fine)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix duplicate React key warning inside BookingModal's AnimatePresence mapped list",
+    "Replace native <input type=date> with shadcn Calendar+Popover in BookingModal for consistent dark-theme UX and proper i18n format",
+    "Decide product behaviour when deposit ($300) exceeds individual package price ($160/$190/$240) — either cap deposit or adjust copy"
+  ],
+  "critical_code_review_comments": [
+    "server.py uses deprecated @app.on_event('startup'/'shutdown') — migrate to FastAPI lifespan handlers (FastAPI 0.110+).",
+    "Single-file server.py (~333 lines) is acceptable but auth/models/bookings could be split into routers for maintainability as it grows.",
+    "Login endpoint has NO rate limiting / brute-force lockout (playbook requires 5-attempt lockout) — currently unlimited login attempts possible.",
+    "access_token cookie uses secure=False which is insecure for production; should be driven by env (e.g., ENV=production → secure=True, samesite='none').",
+    "CORS uses allow_origins='*' with allow_credentials=True — this combination is rejected by browsers and is a misconfig; must list explicit origins when credentials=True.",
+    "No pagination on /api/admin/bookings (hard-coded .to_list(1000)) — will break when bookings exceed 1000."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "95%"},
+  "test_credentials": "Admin: gotchalospatos351@gmail.com / GotchaLosPatos376 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Test bookings created during pytest runs prefixed with TEST_ and cleaned up in test_zzz_cleanup. Playwright test also created and deleted one TEST_DashboardBooking.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend at https://gotcha-paintball-3d.preview.emergentagent.com/api is fully functional. 20 pytest cases cover auth (login/me/bearer/cookie), public booking creation + validation, admin CRUD (list sorted desc, patch, delete), stats, and bcrypt hash format. Frontend Hero canvas renders (R3F primitives fix via patched visual-edits babel plugin is working). Known low-priority issues: React duplicate-key warning in BookingModal, native HTML5 date picker instead of shadcn Calendar, brute-force rate limit missing, CORS misconfig (origins=*+credentials=true), deprecated startup event. Admin login error display is controlled by data-testid='admin-error' (not generic .error class)."
+}

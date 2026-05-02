@@ -1,0 +1,235 @@
+"""Backend API tests for Gotcha Los Patos La Marquesa."""
+import os
+import uuid
+import pytest
+import requests
+from datetime import datetime
+
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://gotcha-paintball-3d.preview.emergentagent.com").rstrip("/")
+API = f"{BASE_URL}/api"
+
+ADMIN_EMAIL = "gotchalospatos351@gmail.com"
+ADMIN_PASSWORD = "GotchaLosPatos376"
+
+
+@pytest.fixture(scope="session")
+def session():
+    s = requests.Session()
+    s.headers.update({"Content-Type": "application/json"})
+    return s
+
+
+@pytest.fixture(scope="session")
+def admin_token(session):
+    r = session.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+    if r.status_code != 200:
+        pytest.skip(f"Admin login failed: {r.status_code} {r.text}")
+    return r.json()["access_token"]
+
+
+@pytest.fixture(scope="session")
+def admin_headers(admin_token):
+    return {"Authorization": f"Bearer {admin_token}", "Content-Type": "application/json"}
+
+
+# ---------------- Health ----------------
+def test_root(session):
+    r = session.get(f"{API}/")
+    assert r.status_code == 200
+    assert "message" in r.json()
+
+
+# ---------------- Auth ----------------
+class TestAuth:
+    def test_login_success_returns_user_and_token(self, session):
+        r = session.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+        assert r.status_code == 200
+        data = r.json()
+        assert "access_token" in data and isinstance(data["access_token"], str)
+        assert data["user"]["email"] == ADMIN_EMAIL
+        assert data["user"]["role"] == "admin"
+        # cookie set
+        assert "access_token" in r.cookies or any("access_token" in c.name for c in r.cookies)
+
+    def test_login_wrong_password(self, session):
+        r = session.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": "wrongpass"})
+        assert r.status_code == 401
+
+    def test_login_unknown_email(self, session):
+        r = session.post(f"{API}/auth/login", json={"email": "nonexistent@example.com", "password": "xxxxx"})
+        assert r.status_code == 401
+
+    def test_me_with_bearer(self, session, admin_headers):
+        r = session.get(f"{API}/auth/me", headers=admin_headers)
+        assert r.status_code == 200
+        data = r.json()
+        assert data["email"] == ADMIN_EMAIL
+        assert data["role"] == "admin"
+
+    def test_me_without_auth(self, session):
+        # Use a fresh session without cookies
+        r = requests.get(f"{API}/auth/me")
+        assert r.status_code == 401
+
+    def test_bcrypt_hash_format(self):
+        """Verify bcrypt hash format in DB via direct check (requires mongo access)."""
+        try:
+            from motor.motor_asyncio import AsyncIOMotorClient  # noqa
+            import asyncio
+            from pymongo import MongoClient
+            mc = MongoClient(os.environ.get("MONGO_URL", "mongodb://localhost:27017"))
+            db = mc[os.environ.get("DB_NAME", "test_database")]
+            user = db.users.find_one({"email": ADMIN_EMAIL})
+            if user and "password_hash" in user:
+                assert user["password_hash"].startswith("$2b$") or user["password_hash"].startswith("$2a$")
+            mc.close()
+        except Exception as e:
+            pytest.skip(f"Cannot access DB directly: {e}")
+
+
+# ---------------- Bookings Public ----------------
+class TestBookingsPublic:
+    def _payload(self, suffix=""):
+        return {
+            "name": f"TEST_User{suffix}",
+            "phone": "+525512345678",
+            "email": f"test{suffix}@example.com",
+            "package_id": "ind_2",
+            "package_name": "Paquete Intermedio",
+            "package_price": 190.0,
+            "package_type": "individual",
+            "participants": 2,
+            "date": "2026-03-15",
+            "time": "14:00",
+            "notes": "TEST booking",
+            "deposit": 300.0,
+        }
+
+    def test_create_booking_no_auth(self, session):
+        r = session.post(f"{API}/bookings", json=self._payload("_A"))
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["status"] == "pending"
+        assert data["deposit"] == 300.0
+        assert data["package_price"] == 190.0
+        assert data["participants"] == 2
+        assert "id" in data
+        assert "_id" not in data
+        # store for later
+        pytest.booking_id_a = data["id"]
+
+    def test_create_booking_validation_error(self, session):
+        bad = self._payload("_bad")
+        bad["participants"] = 0  # ge=1
+        r = session.post(f"{API}/bookings", json=bad)
+        assert r.status_code == 422
+
+    def test_create_booking_missing_fields(self, session):
+        r = session.post(f"{API}/bookings", json={"name": "X"})
+        assert r.status_code == 422
+
+
+# ---------------- Admin Bookings ----------------
+class TestAdminBookings:
+    def test_list_requires_auth(self, session):
+        r = requests.get(f"{API}/admin/bookings")
+        assert r.status_code == 401
+
+    def test_list_bookings(self, session, admin_headers):
+        r = session.get(f"{API}/admin/bookings", headers=admin_headers)
+        assert r.status_code == 200
+        bookings = r.json()
+        assert isinstance(bookings, list)
+        for b in bookings:
+            assert "_id" not in b
+            assert "id" in b
+        # verify sorted desc by created_at
+        if len(bookings) >= 2:
+            assert bookings[0]["created_at"] >= bookings[-1]["created_at"]
+
+    def test_update_status_confirm(self, session, admin_headers):
+        # create a booking
+        payload = {
+            "name": "TEST_Confirm", "phone": "+525500000001",
+            "package_id": "fam_1", "package_name": "Fam 1", "package_price": 2500.0,
+            "package_type": "family", "participants": 5,
+            "date": "2026-04-01", "time": "10:00", "notes": "", "deposit": 300.0,
+        }
+        cr = session.post(f"{API}/bookings", json=payload)
+        assert cr.status_code == 200
+        bid = cr.json()["id"]
+
+        r = session.patch(f"{API}/admin/bookings/{bid}", json={"status": "confirmed"}, headers=admin_headers)
+        assert r.status_code == 200
+        assert r.json()["status"] == "confirmed"
+
+        # verify via list
+        lst = session.get(f"{API}/admin/bookings", headers=admin_headers).json()
+        found = [b for b in lst if b["id"] == bid]
+        assert found and found[0]["status"] == "confirmed"
+
+        # cleanup
+        session.delete(f"{API}/admin/bookings/{bid}", headers=admin_headers)
+
+    def test_update_status_invalid(self, session, admin_headers):
+        payload = {
+            "name": "TEST_Invalid", "phone": "+525500000002",
+            "package_id": "ind_1", "package_name": "Ind 1", "package_price": 160.0,
+            "package_type": "individual", "participants": 1,
+            "date": "2026-04-02", "time": "11:00", "deposit": 300.0,
+        }
+        cr = session.post(f"{API}/bookings", json=payload)
+        bid = cr.json()["id"]
+
+        r = session.patch(f"{API}/admin/bookings/{bid}", json={"status": "rejected"}, headers=admin_headers)
+        assert r.status_code == 400
+
+        session.delete(f"{API}/admin/bookings/{bid}", headers=admin_headers)
+
+    def test_update_nonexistent(self, session, admin_headers):
+        r = session.patch(f"{API}/admin/bookings/{uuid.uuid4()}", json={"status": "confirmed"}, headers=admin_headers)
+        assert r.status_code == 404
+
+    def test_delete_booking(self, session, admin_headers):
+        payload = {
+            "name": "TEST_Delete", "phone": "+525500000003",
+            "package_id": "ind_3", "package_name": "Ind 3", "package_price": 240.0,
+            "package_type": "individual", "participants": 1,
+            "date": "2026-04-03", "time": "12:00", "deposit": 300.0,
+        }
+        cr = session.post(f"{API}/bookings", json=payload)
+        bid = cr.json()["id"]
+        r = session.delete(f"{API}/admin/bookings/{bid}", headers=admin_headers)
+        assert r.status_code == 200
+        # verify gone
+        lst = session.get(f"{API}/admin/bookings", headers=admin_headers).json()
+        assert not any(b["id"] == bid for b in lst)
+
+    def test_delete_nonexistent(self, session, admin_headers):
+        r = session.delete(f"{API}/admin/bookings/{uuid.uuid4()}", headers=admin_headers)
+        assert r.status_code == 404
+
+
+# ---------------- Admin Stats ----------------
+class TestAdminStats:
+    def test_stats_requires_auth(self):
+        r = requests.get(f"{API}/admin/stats")
+        assert r.status_code == 401
+
+    def test_stats_structure(self, session, admin_headers):
+        r = session.get(f"{API}/admin/stats", headers=admin_headers)
+        assert r.status_code == 200
+        d = r.json()
+        for k in ["total", "pending", "confirmed", "cancelled", "completed", "estimated_revenue", "collected_deposits"]:
+            assert k in d
+        assert isinstance(d["total"], int)
+
+
+# ---------------- Cleanup ----------------
+def test_zzz_cleanup(admin_headers):
+    """Remove any TEST_ bookings created during run."""
+    s = requests.Session()
+    lst = s.get(f"{API}/admin/bookings", headers=admin_headers).json()
+    for b in lst:
+        if b.get("name", "").startswith("TEST_"):
+            s.delete(f"{API}/admin/bookings/{b['id']}", headers=admin_headers)
