@@ -1,0 +1,34 @@
+{
+  "summary": "Iteration 3 verified end-to-end. Backend: 33/33 pytest pass (10 new TestDualLogin tests added). Verified: identifier=email login, identifier=AdminGLP2026 username login (returns user.username='AdminGLP2026', role='admin', cookie set), case-insensitive username ('adminglp2026' lowercase) login, legacy {email,password} payload still works (backwards compat), wrong password → 401 'Credenciales inválidas', empty/missing identifier → 400, staff user can list/patch/delete bookings and read /api/admin/stats, both seeded users persist with distinct ids. Frontend: Navbar exposes nav-personal (text 'PERSONAL') and nav-video (text 'VIDEO') data-testids; PERSONAL link navigates to /admin/login. /admin/login titled 'PANEL DE PERSONAL' with badge 'ACCESO PERSONAL', input is type='text' with placeholder 'email@dominio.com  o  AdminGLP2026'. Login with AdminGLP2026/GotchaLosPatos0126 redirects to /admin/dashboard and renders Total/Pendiente/Confirmadas/Canceladas stats + 2 confirm/cancel/delete buttons (existing booking rows). Login with gotchalospatos351@gmail.com/GotchaLosPatos376 also redirects to /admin/dashboard. Wrong password keeps user on /admin/login and shows admin-error 'Credenciales inválidas'. Gallery now contains 7 photos (data-testid gallery-photo-0..gallery-photo-6, gallery-photo-7 absent). VideoSection 'EXPERIENCIA EN VIDEO' renders with thumbnail; clicking [data-testid='video-play'] replaces it with [data-testid='video-iframe'] whose src='https://www.youtube.com/embed/rmyjE2m0Vjg?autoplay=1&rel=0&modestbranding=1' (correct video id rmyjE2m0Vjg).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Login route: 'is_email = \"@\" in raw_id' is fine but means any username containing '@' will be searched as email — acceptable since usernames shouldn't contain '@'. Pydantic model could enforce min_length on identifier+password to fail earlier, but current 400 on empty string is correct.",
+    "Username regex lookup uses unsanitized user input inside $regex. Although wrapped in ^...$ with options 'i', special regex chars in raw_id (e.g. '.', '*', '(') would still match unexpectedly. Recommend re.escape(raw_id) before injecting, or use $expr with $strcasecmp for safe case-insensitive equality.",
+    "Staff seed creates synthetic email '<username>@staff.local'. The unique index on 'email' prevents collision but if STAFF_USERNAME ever changes, the old staff document stays orphaned. Consider seeding by stable id or cleaning up old staff docs.",
+    "Carryover from earlier iterations (still unaddressed, low priority): deprecated @app.on_event('startup'), no rate-limit/brute-force lockout on /api/auth/login (spec mentioned 5-fail lockout but is not implemented), CORS allow_origin_regex='.*' + allow_credentials=True is a browser-rejected combo for cross-origin credentials, secure=False cookie, .to_list(1000) without pagination.",
+    "Frontend: AdminLogin input still uses an envelope/mail icon next to a now-text field that accepts username — minor visual inconsistency (consider swapping to a User icon when the value has no '@')."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "Email: gotchalospatos351@gmail.com / GotchaLosPatos376  |  Username: AdminGLP2026 / GotchaLosPatos0126",
+  "seed_data_creation": "Test bookings prefixed TEST_ (TEST_StaffPatch, TEST_Confirm, TEST_Delete, TEST_Avail_*, etc.) created during pytest runs and cleaned up via test_zzz_cleanup and inline DELETEs. No leftover TEST_ data.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 3 fully green. Auth model: POST /api/auth/login accepts {identifier, password} OR legacy {email, password}; '@' in identifier ⇒ email lookup, otherwise username regex (case-insensitive). Seeded users: ADMIN_EMAIL/ADMIN_PASSWORD and STAFF_USERNAME/STAFF_PASSWORD from backend/.env, both role='admin'. Staff user gets synthetic email '<username>@staff.local'. Frontend testids of interest: nav-personal, nav-video, video-section, video-player, video-play, video-iframe, video-youtube-link, gallery-photo-0..6, admin-email-input (now type=text), admin-password-input, admin-login-submit, admin-error. AdminLogin AuthContext sends {identifier, password}. Same /admin/dashboard for both users; confirm/cancel/delete testids exist per booking row.",
+  "rca of the issue": "N/A — no failures detected."
+}

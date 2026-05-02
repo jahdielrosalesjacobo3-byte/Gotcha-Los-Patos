@@ -12,7 +12,17 @@ function ParallaxPhoto({ photo, index, lang }) {
     });
     const y = useTransform(scrollYProgress, [0, 1], [60, -60]);
     const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.1, 1, 1.1]);
-    const isLarge = index === 0 || index === 3;
+    // Bento layouts for 7 photos
+    const layoutMap = [
+        "md:col-span-2 md:row-span-2",      // 0 - large
+        "md:col-span-2 md:row-span-1",      // 1 - wide
+        "md:col-span-2 md:row-span-1",      // 2 - wide
+        "md:col-span-1 md:row-span-1",      // 3
+        "md:col-span-1 md:row-span-1",      // 4
+        "md:col-span-2 md:row-span-2",      // 5 - large
+        "md:col-span-2 md:row-span-1",      // 6 - wide
+    ];
+    const layoutClass = layoutMap[index] || "md:col-span-1 md:row-span-1";
 
     return (
         <motion.div
@@ -20,10 +30,8 @@ function ParallaxPhoto({ photo, index, lang }) {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, delay: index * 0.06 }}
-            className={`relative group overflow-hidden rounded-xl border border-white/10 ${
-                isLarge ? "md:col-span-2 md:row-span-2 aspect-[4/3]" : "aspect-square"
-            }`}
+            transition={{ duration: 0.7, delay: index * 0.05 }}
+            className={`relative group overflow-hidden rounded-xl border border-white/10 ${layoutClass}`}
             data-testid={`gallery-photo-${index}`}
         >
             <motion.img
@@ -46,7 +54,7 @@ function ParallaxPhoto({ photo, index, lang }) {
             </div>
             {/* caption */}
             <div className="absolute left-5 bottom-5 right-5">
-                <p className="font-display text-xl md:text-2xl tracking-wider text-white drop-shadow-lg">
+                <p className="font-display text-lg md:text-xl tracking-wider text-white drop-shadow-lg">
                     {lang === "es" ? photo.captionEs : photo.captionEn}
                 </p>
             </div>
@@ -89,7 +97,7 @@ export default function Gallery() {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 auto-rows-[180px] md:auto-rows-[220px] gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 auto-rows-[200px] md:auto-rows-[220px] gap-4">
                     {GALLERY_PHOTOS.map((photo, i) => (
                         <ParallaxPhoto key={i} photo={photo} index={i} lang={lang} />
                     ))}

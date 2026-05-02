@@ -27,10 +27,10 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => { fetchMe(); }, [fetchMe]);
 
-    const login = async (email, password) => {
+    const login = async (identifier, password) => {
         const { data } = await axios.post(
             `${API}/auth/login`,
-            { email, password },
+            { identifier, password },
             { withCredentials: true }
         );
         if (data.access_token) {

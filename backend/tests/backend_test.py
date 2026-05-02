@@ -10,6 +10,8 @@ API = f"{BASE_URL}/api"
 
 ADMIN_EMAIL = "gotchalospatos351@gmail.com"
 ADMIN_PASSWORD = "GotchaLosPatos376"
+STAFF_USERNAME = "AdminGLP2026"
+STAFF_PASSWORD = "GotchaLosPatos0126"
 
 
 @pytest.fixture(scope="session")
@@ -85,6 +87,95 @@ class TestAuth:
             mc.close()
         except Exception as e:
             pytest.skip(f"Cannot access DB directly: {e}")
+
+
+# ---------------- Iteration 3: Dual Login (identifier=email|username) ----------------
+class TestDualLogin:
+    def test_login_with_identifier_email(self, session):
+        r = session.post(f"{API}/auth/login", json={"identifier": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "access_token" in data
+        assert data["user"]["email"] == ADMIN_EMAIL
+        assert data["user"]["role"] == "admin"
+
+    def test_login_with_username(self, session):
+        r = session.post(f"{API}/auth/login", json={"identifier": STAFF_USERNAME, "password": STAFF_PASSWORD})
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert "access_token" in data
+        assert data["user"]["username"] == STAFF_USERNAME
+        assert data["user"]["role"] == "admin"
+        # Cookie is set
+        assert any("access_token" in c.name for c in r.cookies)
+
+    def test_login_username_case_insensitive(self, session):
+        r = session.post(f"{API}/auth/login", json={"identifier": STAFF_USERNAME.lower(), "password": STAFF_PASSWORD})
+        assert r.status_code == 200, r.text
+        assert r.json()["user"]["username"] == STAFF_USERNAME
+
+    def test_login_legacy_email_field_still_works(self, session):
+        # legacy payload {email,password}
+        r = session.post(f"{API}/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+        assert r.status_code == 200
+        assert r.json()["user"]["email"] == ADMIN_EMAIL
+
+    def test_login_username_wrong_password(self, session):
+        r = session.post(f"{API}/auth/login", json={"identifier": STAFF_USERNAME, "password": "wrongXXX"})
+        assert r.status_code == 401
+        assert "Credenciales inv" in r.text or "credenciales" in r.text.lower()
+
+    def test_login_unknown_username(self, session):
+        r = session.post(f"{API}/auth/login", json={"identifier": "ghost_user_xxx", "password": "anything"})
+        assert r.status_code == 401
+
+    def test_login_empty_identifier(self, session):
+        r = session.post(f"{API}/auth/login", json={"identifier": "", "password": "x"})
+        assert r.status_code == 400
+
+    def test_login_missing_identifier_and_email(self, session):
+        r = session.post(f"{API}/auth/login", json={"password": "x"})
+        assert r.status_code == 400
+
+    def test_staff_can_access_admin_endpoints(self, session):
+        # Login as staff
+        r = session.post(f"{API}/auth/login", json={"identifier": STAFF_USERNAME, "password": STAFF_PASSWORD})
+        assert r.status_code == 200
+        token = r.json()["access_token"]
+        h = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+        # GET /api/admin/bookings
+        rb = session.get(f"{API}/admin/bookings", headers=h)
+        assert rb.status_code == 200
+        assert isinstance(rb.json(), list)
+
+        # GET /api/admin/stats
+        rs = session.get(f"{API}/admin/stats", headers=h)
+        assert rs.status_code == 200
+        for k in ["total", "pending", "confirmed", "cancelled", "completed"]:
+            assert k in rs.json()
+
+        # PATCH + DELETE on a freshly created booking
+        payload = {
+            "name": "TEST_StaffPatch", "phone": "+525500000077",
+            "package_id": "ind_1", "package_name": "Ind 1", "package_price": 160.0,
+            "package_type": "individual", "participants": 1,
+            "date": "2026-08-15", "time": "10:00", "deposit": 300.0,
+        }
+        cr = session.post(f"{API}/bookings", json=payload)
+        bid = cr.json()["id"]
+        pr = session.patch(f"{API}/admin/bookings/{bid}", json={"status": "confirmed"}, headers=h)
+        assert pr.status_code == 200
+        assert pr.json()["status"] == "confirmed"
+        dr = session.delete(f"{API}/admin/bookings/{bid}", headers=h)
+        assert dr.status_code == 200
+
+    def test_both_users_persist(self, session):
+        """Both seeded users must resolve via login (idempotent seed)."""
+        r1 = session.post(f"{API}/auth/login", json={"identifier": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
+        r2 = session.post(f"{API}/auth/login", json={"identifier": STAFF_USERNAME, "password": STAFF_PASSWORD})
+        assert r1.status_code == 200 and r2.status_code == 200
+        assert r1.json()["user"]["id"] != r2.json()["user"]["id"]
 
 
 # ---------------- Bookings Public ----------------

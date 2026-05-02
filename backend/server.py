@@ -62,8 +62,13 @@ def create_access_token(user_id: str, email: str) -> str:
 # Models
 # ============================================================
 class LoginRequest(BaseModel):
-    email: EmailStr
+    # Accepts either email or username via 'identifier'; keep 'email' for backwards compat.
+    identifier: Optional[str] = None
+    email: Optional[str] = None
     password: str
+
+    def get_id(self) -> str:
+        return ((self.identifier or self.email or "")).strip()
 
 class UserOut(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -184,8 +189,18 @@ async def root():
 # -------- Auth --------
 @api_router.post("/auth/login")
 async def login(data: LoginRequest, response: Response):
-    email = data.email.lower().strip()
-    user = await db.users.find_one({"email": email})
+    raw_id = data.get_id()
+    if not raw_id or not data.password:
+        raise HTTPException(status_code=400, detail="Identificador y contraseña requeridos")
+
+    is_email = "@" in raw_id
+    if is_email:
+        query = {"email": raw_id.lower()}
+    else:
+        # Username is case-insensitive lookup
+        query = {"username": {"$regex": f"^{raw_id}$", "$options": "i"}}
+
+    user = await db.users.find_one(query)
     if not user or not verify_password(data.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
@@ -203,6 +218,7 @@ async def login(data: LoginRequest, response: Response):
         "user": {
             "id": user["id"],
             "email": user["email"],
+            "username": user.get("username"),
             "role": user["role"],
             "name": user.get("name"),
         },
@@ -363,25 +379,53 @@ async def on_startup():
     admin_password = os.environ.get("ADMIN_PASSWORD", "")
     if not admin_email or not admin_password:
         logger.warning("ADMIN_EMAIL/ADMIN_PASSWORD not set; skipping admin seed.")
-        return
+    else:
+        existing = await db.users.find_one({"email": admin_email})
+        if existing is None:
+            await db.users.insert_one({
+                "id": str(uuid.uuid4()),
+                "email": admin_email,
+                "username": None,
+                "password_hash": hash_password(admin_password),
+                "name": "Admin",
+                "role": "admin",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            logger.info(f"Admin user seeded: {admin_email}")
+        elif not verify_password(admin_password, existing.get("password_hash", "")):
+            await db.users.update_one(
+                {"email": admin_email},
+                {"$set": {"password_hash": hash_password(admin_password)}},
+            )
+            logger.info(f"Admin password updated for: {admin_email}")
 
-    existing = await db.users.find_one({"email": admin_email})
-    if existing is None:
-        await db.users.insert_one({
-            "id": str(uuid.uuid4()),
-            "email": admin_email,
-            "password_hash": hash_password(admin_password),
-            "name": "Admin",
-            "role": "admin",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
-        logger.info(f"Admin user seeded: {admin_email}")
-    elif not verify_password(admin_password, existing.get("password_hash", "")):
-        await db.users.update_one(
-            {"email": admin_email},
-            {"$set": {"password_hash": hash_password(admin_password)}},
-        )
-        logger.info(f"Admin password updated for: {admin_email}")
+    # Staff (username-based) seed
+    staff_username = os.environ.get("STAFF_USERNAME", "").strip()
+    staff_password = os.environ.get("STAFF_PASSWORD", "")
+    if staff_username and staff_password:
+        try:
+            await db.users.create_index("username", unique=True, sparse=True)
+        except Exception:
+            pass
+        staff_email = f"{staff_username.lower()}@staff.local"
+        existing_staff = await db.users.find_one({"username": staff_username})
+        if existing_staff is None:
+            await db.users.insert_one({
+                "id": str(uuid.uuid4()),
+                "email": staff_email,
+                "username": staff_username,
+                "password_hash": hash_password(staff_password),
+                "name": "Personal",
+                "role": "admin",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            logger.info(f"Staff user seeded: {staff_username}")
+        elif not verify_password(staff_password, existing_staff.get("password_hash", "")):
+            await db.users.update_one(
+                {"username": staff_username},
+                {"$set": {"password_hash": hash_password(staff_password)}},
+            )
+            logger.info(f"Staff password updated for: {staff_username}")
 
 
 @app.on_event("shutdown")

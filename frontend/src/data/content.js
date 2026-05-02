@@ -8,6 +8,9 @@ export const DEPOSIT = 300;
 
 export const LOGO_URL = "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/xkq8qnpn_WhatsApp%20Image%202026-04-26%20at%2010.06.42%20PM.jpeg";
 
+export const YOUTUBE_VIDEO_ID = "rmyjE2m0Vjg";
+export const YOUTUBE_URL = `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_ID}`;
+
 export const SOCIAL_LINKS = {
     facebook: "https://www.facebook.com/profile.php?id=61588822287168",
     instagram: "https://www.instagram.com/gotcha_lospatos/",
@@ -38,6 +41,24 @@ export const GALLERY_PHOTOS = [
         captionEs: "Equipo profesional, bosque real",
         captionEn: "Pro gear, real forest",
         tag: "PRO",
+    },
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/9qkcmn5s_WhatsApp%20Image%202026-04-26%20at%209.19.36%20PM%20%282%29.jpeg",
+        captionEs: "Adrenalina y humo de color",
+        captionEn: "Adrenaline and colored smoke",
+        tag: "EFECTOS",
+    },
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/mexmm9w7_WhatsApp%20Image%202026-04-25%20at%202.26.27%20PM.jpeg",
+        captionEs: "Diversión sin límites: gotcha, cuatrimotos, paseos, tirolesa",
+        captionEn: "Limitless fun: paintball, ATVs, horseback, ziplines",
+        tag: "ACTIVIDADES",
+    },
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/osvow0yj_WhatsApp%20Image%202026-05-01%20at%207.52.05%20PM.jpeg",
+        captionEs: "Promo $2,800 ideal empresas y fiestas",
+        captionEn: "$2,800 promo - perfect for companies and parties",
+        tag: "PROMO",
     },
 ];
 
@@ -173,7 +194,7 @@ export const SCHEDULE = {
 
 export const T = {
     es: {
-        nav: { packages: "PAQUETES", info: "INFO", gallery: "GALERÍA", testimonials: "RESEÑAS", contact: "CONTACTO", book: "RESERVAR" },
+        nav: { packages: "PAQUETES", info: "INFO", gallery: "GALERÍA", video: "VIDEO", testimonials: "RESEÑAS", contact: "CONTACTO", personal: "PERSONAL", book: "RESERVAR" },
         hero: {
             badge: "PAINTBALL TÁCTICO · LA MARQUESA",
             titleA: "DESATA",
@@ -242,6 +263,11 @@ export const T = {
             title: "ASÍ SE VIVE EN EL BOSQUE",
             subtitle: "Fotos reales de nuestros guerreros disfrutando la mejor experiencia táctica.",
         },
+        videoSection: {
+            kicker: "MIRA EL CAMPO EN VIVO",
+            title: "EXPERIENCIA EN VIDEO",
+            subtitle: "Conoce nuestro campo, nuestro equipo y la diversión que vivirás en Gotcha Los Patos.",
+        },
         cta: {
             title: "¿LISTO PARA EL COMBATE?",
             subtitle: "Reserva con $300 MXN. Vive la mejor batalla de tu vida.",
@@ -257,16 +283,17 @@ export const T = {
             adminLink: "Acceso staff",
         },
         admin: {
-            title: "PANEL DE RESERVAS",
-            login: "ACCESO ADMIN",
-            email: "Email",
+            title: "PANEL DE PERSONAL",
+            login: "ACCESO PERSONAL",
+            email: "Email o Usuario",
             password: "Contraseña",
             enter: "ENTRAR",
             logout: "Cerrar sesión",
+            hint: "Solo personal autorizado.",
         },
     },
     en: {
-        nav: { packages: "PACKAGES", info: "INFO", gallery: "GALLERY", testimonials: "REVIEWS", contact: "CONTACT", book: "BOOK" },
+        nav: { packages: "PACKAGES", info: "INFO", gallery: "GALLERY", video: "VIDEO", testimonials: "REVIEWS", contact: "CONTACT", personal: "STAFF", book: "BOOK" },
         hero: {
             badge: "TACTICAL PAINTBALL · LA MARQUESA",
             titleA: "UNLEASH",
@@ -334,6 +361,11 @@ export const T = {
             kicker: "THE FIELD IN ACTION",
             title: "THIS IS LIFE IN THE FOREST",
             subtitle: "Real photos of our warriors enjoying the best tactical experience.",
+        },
+        videoSection: {
+            kicker: "WATCH THE FIELD LIVE",
+            title: "VIDEO EXPERIENCE",
+            subtitle: "Get to know our field, our team and the fun you'll live at Gotcha Los Patos.",
         },
         cta: {
             title: "READY FOR COMBAT?",

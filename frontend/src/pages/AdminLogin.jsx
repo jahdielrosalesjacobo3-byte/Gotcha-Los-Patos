@@ -24,11 +24,11 @@ export default function AdminLogin() {
         setSubmitting(true);
         setError("");
         try {
-            const u = await login(email, password);
+            const u = await login(email.trim(), password);
             if (u.role === "admin") {
                 nav("/admin/dashboard");
             } else {
-                setError(lang === "es" ? "Acceso restringido a administradores." : "Admin access only.");
+                setError(lang === "es" ? "Acceso restringido al personal." : "Staff access only.");
             }
         } catch (err) {
             const detail = err.response?.data?.detail;
@@ -87,7 +87,9 @@ export default function AdminLogin() {
                             <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
                             <input
                                 required
-                                type="email"
+                                type="text"
+                                autoComplete="username"
+                                placeholder={lang === "es" ? "email@dominio.com  o  AdminGLP2026" : "email@domain.com  or  AdminGLP2026"}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="bk-input"

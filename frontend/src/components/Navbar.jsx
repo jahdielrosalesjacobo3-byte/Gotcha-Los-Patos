@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X, Globe, Lock } from "lucide-react";
 import { Logo } from "./Logo";
 import { useLang } from "../contexts/LanguageContext";
 
 const links = [
     { id: "info", key: "info" },
     { id: "packages", key: "packages" },
+    { id: "video", key: "video" },
     { id: "gallery", key: "gallery" },
     { id: "testimonials", key: "testimonials" },
     { id: "contact", key: "contact" },
@@ -66,6 +67,13 @@ export default function Navbar({ onBook }) {
                 </nav>
 
                 <div className="flex items-center gap-3">
+                    <a
+                        href="/admin/login"
+                        data-testid="nav-personal"
+                        className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-neon-orange/40 hover:border-neon-orange/80 hover:bg-neon-orange/10 transition font-mono text-[10px] tracking-[0.25em] text-neon-orange"
+                    >
+                        <Lock size={12} /> {t.nav.personal}
+                    </a>
                     <button
                         onClick={toggle}
                         data-testid="lang-toggle"
