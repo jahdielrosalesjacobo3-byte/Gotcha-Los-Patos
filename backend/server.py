@@ -5,6 +5,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 import os
+import re
 import logging
 import uuid
 import bcrypt
@@ -197,8 +198,8 @@ async def login(data: LoginRequest, response: Response):
     if is_email:
         query = {"email": raw_id.lower()}
     else:
-        # Username is case-insensitive lookup
-        query = {"username": {"$regex": f"^{raw_id}$", "$options": "i"}}
+        # Username is case-insensitive lookup; escape regex special chars for safety
+        query = {"username": {"$regex": f"^{re.escape(raw_id)}$", "$options": "i"}}
 
     user = await db.users.find_one(query)
     if not user or not verify_password(data.password, user.get("password_hash", "")):

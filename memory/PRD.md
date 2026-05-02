@@ -41,6 +41,17 @@ Stack: React (CRA) + Tailwind + Framer Motion + Three.js + R3F + Drei + Lucide +
 - [x] Cancelled bookings no bloquean slots.
 - [x] Fix: duplicate React key warning en BookingModal (movido `<style>` fuera de AnimatePresence).
 
+## Iteration 3 (2025-12)
+- [x] Embed YouTube video (rmyjE2m0Vjg) en nueva sección VideoSection con thumbnail click-to-play.
+- [x] 3 fotos más en galería (total 7) con bento layout adaptativo.
+- [x] Sección "Personal" con login dual: acepta email O username via campo `identifier`.
+- [x] Nuevo usuario staff seeded desde .env: AdminGLP2026 / GotchaLosPatos0126 (role=admin).
+- [x] Backwards compat: legacy {email, password} payload sigue funcionando.
+- [x] Username lookup case-insensitive con re.escape para seguridad anti-regex injection.
+- [x] Nav links nuevos: PERSONAL (con candado naranja) → /admin/login, VIDEO → #video.
+- [x] AdminLogin renombrado a "PANEL DE PERSONAL" / "ACCESO PERSONAL", input texto con placeholder dual.
+- [x] Tests: backend 33/33 (10 nuevos en TestDualLogin), frontend 100%.
+
 ## Backlog / Future Enhancements
 ### P1
 - Replace native `<input type=date>` with shadcn Calendar/Popover for dark theme + locale ES.
