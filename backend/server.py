@@ -108,6 +108,37 @@ class BookingStatusUpdate(BaseModel):
     status: str  # pending | confirmed | cancelled | completed
 
 
+# Conflict window in minutes (±1 hour around each booking)
+CONFLICT_MINUTES = 60
+
+
+def _to_minutes(time_str: str) -> int:
+    """Convert 'HH:MM' to minutes since midnight."""
+    try:
+        h, m = time_str.split(":")
+        return int(h) * 60 + int(m)
+    except Exception:
+        return -1
+
+
+async def _has_conflict(date: str, time_str: str) -> bool:
+    """Returns True if a non-cancelled booking exists within ±60 min on that date."""
+    new_t = _to_minutes(time_str)
+    if new_t < 0:
+        return False
+    cursor = db.bookings.find(
+        {"date": date, "status": {"$ne": "cancelled"}},
+        {"_id": 0, "time": 1},
+    )
+    async for doc in cursor:
+        existing = _to_minutes(doc.get("time", ""))
+        if existing < 0:
+            continue
+        if abs(existing - new_t) <= CONFLICT_MINUTES:
+            return True
+    return False
+
+
 # ============================================================
 # Auth dependency
 # ============================================================
@@ -191,8 +222,34 @@ async def me(user: dict = Depends(get_current_user)):
 
 
 # -------- Bookings (Public) --------
+@api_router.get("/availability")
+async def availability(date: str):
+    """Returns blocked slots for a given date.
+    A slot at time T is blocked if any active booking falls within [T-60, T+60] minutes.
+    Returned 'blocked_times' = exact times of existing bookings.
+    Frontend expands ±1h in the UI when selecting.
+    """
+    docs = await db.bookings.find(
+        {"date": date, "status": {"$ne": "cancelled"}},
+        {"_id": 0, "time": 1, "participants": 1},
+    ).to_list(500)
+    blocked_times = sorted({d["time"] for d in docs if d.get("time")})
+    return {
+        "date": date,
+        "blocked_times": blocked_times,
+        "conflict_window_minutes": CONFLICT_MINUTES,
+    }
+
+
 @api_router.post("/bookings", response_model=BookingOut)
 async def create_booking(data: BookingCreate):
+    # Conflict check: ±60 minutes window
+    if await _has_conflict(data.date, data.time):
+        raise HTTPException(
+            status_code=409,
+            detail="Ese horario está ocupado. Elige otro slot.",
+        )
+
     now = datetime.now(timezone.utc).isoformat()
     booking_id = str(uuid.uuid4())
     doc = {

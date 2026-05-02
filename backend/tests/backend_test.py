@@ -225,6 +225,89 @@ class TestAdminStats:
         assert isinstance(d["total"], int)
 
 
+# ---------------- Availability + Conflict Window (Iteration 2) ----------------
+class TestAvailability:
+    TEST_DATE = "2026-06-15"  # Monday
+
+    def _base_payload(self, time_str, name_suffix):
+        return {
+            "name": f"TEST_Avail_{name_suffix}",
+            "phone": "+525500000099",
+            "package_id": "ind_1", "package_name": "Ind 1", "package_price": 160.0,
+            "package_type": "individual", "participants": 1,
+            "date": self.TEST_DATE, "time": time_str, "deposit": 300.0,
+        }
+
+    def test_availability_empty_date(self, session, admin_headers):
+        # pre-clean this date
+        lst = session.get(f"{API}/admin/bookings", headers=admin_headers).json()
+        for b in lst:
+            if b.get("date") == self.TEST_DATE:
+                session.delete(f"{API}/admin/bookings/{b['id']}", headers=admin_headers)
+        r = session.get(f"{API}/availability", params={"date": self.TEST_DATE})
+        assert r.status_code == 200
+        data = r.json()
+        assert data["date"] == self.TEST_DATE
+        assert data["blocked_times"] == []
+        assert data["conflict_window_minutes"] == 60
+
+    def test_availability_returns_blocked_times_after_booking(self, session, admin_headers):
+        # create 12:00
+        r = session.post(f"{API}/bookings", json=self._base_payload("12:00", "base"))
+        assert r.status_code == 200
+        bid = r.json()["id"]
+
+        av = session.get(f"{API}/availability", params={"date": self.TEST_DATE}).json()
+        assert "12:00" in av["blocked_times"]
+        assert av["conflict_window_minutes"] == 60
+
+        # Conflict: same time
+        r2 = session.post(f"{API}/bookings", json=self._base_payload("12:00", "same"))
+        assert r2.status_code == 409
+
+        # Conflict: 11:30 (30 min away)
+        r3 = session.post(f"{API}/bookings", json=self._base_payload("11:30", "close"))
+        assert r3.status_code == 409
+
+        # Conflict: 13:00 (exactly 60 min -> |diff|<=60 blocks)
+        r4 = session.post(f"{API}/bookings", json=self._base_payload("13:00", "edge60"))
+        assert r4.status_code == 409
+
+        # OK: 14:00 (120 min away)
+        r5 = session.post(f"{API}/bookings", json=self._base_payload("14:00", "ok"))
+        assert r5.status_code == 200
+        bid2 = r5.json()["id"]
+
+        # cleanup
+        session.delete(f"{API}/admin/bookings/{bid}", headers=admin_headers)
+        session.delete(f"{API}/admin/bookings/{bid2}", headers=admin_headers)
+
+    def test_cancelled_booking_does_not_block(self, session, admin_headers):
+        # create booking at 15:00
+        r = session.post(f"{API}/bookings", json=self._base_payload("15:00", "cxl"))
+        assert r.status_code == 200
+        bid = r.json()["id"]
+        # cancel it
+        pr = session.patch(
+            f"{API}/admin/bookings/{bid}",
+            json={"status": "cancelled"},
+            headers=admin_headers,
+        )
+        assert pr.status_code == 200
+
+        # availability should NOT include 15:00
+        av = session.get(f"{API}/availability", params={"date": self.TEST_DATE}).json()
+        assert "15:00" not in av["blocked_times"]
+
+        # New booking at 15:00 should succeed
+        r2 = session.post(f"{API}/bookings", json=self._base_payload("15:00", "replace"))
+        assert r2.status_code == 200
+        bid2 = r2.json()["id"]
+
+        session.delete(f"{API}/admin/bookings/{bid}", headers=admin_headers)
+        session.delete(f"{API}/admin/bookings/{bid2}", headers=admin_headers)
+
+
 # ---------------- Cleanup ----------------
 def test_zzz_cleanup(admin_headers):
     """Remove any TEST_ bookings created during run."""

@@ -1,8 +1,50 @@
 // Bilingual translations + business data
 export const PHONE_WHATSAPP = "525560326688"; // wa.me format (no plus)
 export const PHONE_DISPLAY = "+52 55 6032 6688";
-export const ADDRESS = "La Marquesa, Estado de México";
+export const ADDRESS = "Gotcha Los Patos, 52743 La Marquesa, Méx.";
+export const ADDRESS_SHORT = "La Marquesa, Estado de México";
+export const MAPS_QUERY = "Gotcha Los Patos 52743 La Marquesa";
 export const DEPOSIT = 300;
+
+export const LOGO_URL = "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/xkq8qnpn_WhatsApp%20Image%202026-04-26%20at%2010.06.42%20PM.jpeg";
+
+export const SOCIAL_LINKS = {
+    facebook: "https://www.facebook.com/profile.php?id=61588822287168",
+    instagram: "https://www.instagram.com/gotcha_lospatos/",
+    tiktok: "https://www.tiktok.com/@gotchalospatos",
+};
+
+export const GALLERY_PHOTOS = [
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/3gqxhika_WhatsApp%20Image%202026-04-26%20at%2010.06.57%20PM.jpeg",
+        captionEs: "Equipo táctico listo para la batalla",
+        captionEn: "Tactical squad ready for battle",
+        tag: "SQUAD",
+    },
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/vrw8nk1v_WhatsApp%20Image%202026-04-26%20at%2010.06.56%20PM.jpeg",
+        captionEs: "Grupo grande disfrutando del bosque",
+        captionEn: "Big group enjoying the forest",
+        tag: "EVENTOS",
+    },
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/89wiirqp_WhatsApp%20Image%202026-04-26%20at%209.19.37%20PM.jpeg",
+        captionEs: "Cumpleaños y celebraciones únicas",
+        captionEn: "Unique birthdays and celebrations",
+        tag: "CUMPLEAÑOS",
+    },
+    {
+        url: "https://customer-assets.emergentagent.com/job_gotcha-paintball-3d/artifacts/s10tc28g_WhatsApp%20Image%202026-04-26%20at%209.20.06%20PM.jpeg",
+        captionEs: "Equipo profesional, bosque real",
+        captionEn: "Pro gear, real forest",
+        tag: "PRO",
+    },
+];
+
+// Horario en minutos desde medianoche para validar slots
+// Slots por hora cerrada
+export const TIME_SLOTS_WEEKDAY = ["12:00", "13:00", "14:00", "15:00"]; // L-V 12-16h
+export const TIME_SLOTS_WEEKEND = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]; // S-D 10-18h
 
 export const PACKAGES_INDIVIDUAL = [
     {
@@ -121,17 +163,17 @@ export const TESTIMONIALS = [
 export const SCHEDULE = {
     es: [
         { days: "Lunes a Viernes", hours: "12:00 PM - 4:00 PM" },
-        { days: "Sábados y Domingos", hours: "10:00 AM - 2:00 PM" },
+        { days: "Sábados y Domingos", hours: "10:00 AM - 6:00 PM" },
     ],
     en: [
         { days: "Monday to Friday", hours: "12:00 PM - 4:00 PM" },
-        { days: "Saturday & Sunday", hours: "10:00 AM - 2:00 PM" },
+        { days: "Saturday & Sunday", hours: "10:00 AM - 6:00 PM" },
     ],
 };
 
 export const T = {
     es: {
-        nav: { packages: "PAQUETES", info: "INFO", testimonials: "RESEÑAS", contact: "CONTACTO", book: "RESERVAR" },
+        nav: { packages: "PAQUETES", info: "INFO", gallery: "GALERÍA", testimonials: "RESEÑAS", contact: "CONTACTO", book: "RESERVAR" },
         hero: {
             badge: "PAINTBALL TÁCTICO · LA MARQUESA",
             titleA: "DESATA",
@@ -176,6 +218,11 @@ export const T = {
             participants: "Número de participantes",
             date: "Fecha",
             time: "Horario",
+            timePlaceholder: "Selecciona un horario",
+            slotTaken: "ocupado",
+            slotAvailable: "disponible",
+            noSlotsToday: "No hay horarios disponibles para esta fecha. Elige otro día.",
+            timeConflict: "Ese horario ya está ocupado. Por favor elige otro.",
             notes: "Notas adicionales",
             depositLabel: "Anticipo a pagar hoy",
             totalLabel: "Total del paquete",
@@ -189,6 +236,11 @@ export const T = {
         testimonials: {
             kicker: "VOCES DEL CAMPO",
             title: "RESEÑAS DE NUESTROS GUERREROS",
+        },
+        gallery: {
+            kicker: "EL CAMPO EN ACCIÓN",
+            title: "ASÍ SE VIVE EN EL BOSQUE",
+            subtitle: "Fotos reales de nuestros guerreros disfrutando la mejor experiencia táctica.",
         },
         cta: {
             title: "¿LISTO PARA EL COMBATE?",
@@ -214,7 +266,7 @@ export const T = {
         },
     },
     en: {
-        nav: { packages: "PACKAGES", info: "INFO", testimonials: "REVIEWS", contact: "CONTACT", book: "BOOK" },
+        nav: { packages: "PACKAGES", info: "INFO", gallery: "GALLERY", testimonials: "REVIEWS", contact: "CONTACT", book: "BOOK" },
         hero: {
             badge: "TACTICAL PAINTBALL · LA MARQUESA",
             titleA: "UNLEASH",
@@ -259,6 +311,11 @@ export const T = {
             participants: "Number of participants",
             date: "Date",
             time: "Time",
+            timePlaceholder: "Pick a time slot",
+            slotTaken: "booked",
+            slotAvailable: "available",
+            noSlotsToday: "No available slots for this date. Pick another day.",
+            timeConflict: "That time slot is already booked. Please pick another.",
             notes: "Additional notes",
             depositLabel: "Deposit due today",
             totalLabel: "Package total",
@@ -272,6 +329,11 @@ export const T = {
         testimonials: {
             kicker: "VOICES FROM THE FIELD",
             title: "OUR WARRIORS' REVIEWS",
+        },
+        gallery: {
+            kicker: "THE FIELD IN ACTION",
+            title: "THIS IS LIFE IN THE FOREST",
+            subtitle: "Real photos of our warriors enjoying the best tactical experience.",
         },
         cta: {
             title: "READY FOR COMBAT?",

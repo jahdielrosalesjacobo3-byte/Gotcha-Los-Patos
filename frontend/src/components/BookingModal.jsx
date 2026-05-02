@@ -3,9 +3,29 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, Clock, Users, User, Phone, Mail, MessageSquare, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
 import { useLang } from "../contexts/LanguageContext";
-import { DEPOSIT, PHONE_WHATSAPP } from "../data/content";
+import { DEPOSIT, PHONE_WHATSAPP, TIME_SLOTS_WEEKDAY, TIME_SLOTS_WEEKEND } from "../data/content";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const toMin = (t) => {
+    const [h, m] = t.split(":");
+    return parseInt(h, 10) * 60 + parseInt(m, 10);
+};
+
+// A slot is blocked if any existing booking time is within ±60 minutes
+const isSlotBlocked = (slot, blockedTimes) => {
+    const s = toMin(slot);
+    return blockedTimes.some((b) => Math.abs(toMin(b) - s) <= 60);
+};
+
+// Determine slots based on date weekday
+const slotsForDate = (dateStr) => {
+    if (!dateStr) return [];
+    const d = new Date(`${dateStr}T00:00:00`);
+    if (isNaN(d)) return [];
+    const wd = d.getDay(); // 0=Sun, 6=Sat
+    return wd === 0 || wd === 6 ? TIME_SLOTS_WEEKEND : TIME_SLOTS_WEEKDAY;
+};
 
 function buildWhatsappUrl({ name, pkgName, participants, date, time, deposit, total, lang }) {
     const txt = lang === "es"
@@ -22,23 +42,50 @@ export default function BookingModal({ open, onClose, pkg, type }) {
         email: "",
         participants: 1,
         date: "",
-        time: "12:00",
+        time: "",
         notes: "",
     });
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(null); // null | { whatsappUrl }
     const [error, setError] = useState("");
+    const [blockedTimes, setBlockedTimes] = useState([]);
+    const [loadingSlots, setLoadingSlots] = useState(false);
 
     useEffect(() => {
         if (open) {
             setSuccess(null);
             setError("");
+            setBlockedTimes([]);
             setForm((f) => ({
                 ...f,
+                date: "",
+                time: "",
                 participants: type === "family" ? Math.min(pkg?.people || 10, 10) : 1,
             }));
         }
     }, [open, pkg, type]);
+
+    // When date changes, fetch availability
+    useEffect(() => {
+        if (!open || !form.date) {
+            setBlockedTimes([]);
+            return;
+        }
+        let active = true;
+        setLoadingSlots(true);
+        axios
+            .get(`${API}/availability`, { params: { date: form.date } })
+            .then((r) => { if (active) setBlockedTimes(r.data.blocked_times || []); })
+            .catch(() => { if (active) setBlockedTimes([]); })
+            .finally(() => { if (active) setLoadingSlots(false); });
+        return () => { active = false; };
+    }, [open, form.date]);
+
+    const dateSlots = useMemo(() => slotsForDate(form.date), [form.date]);
+    const availableSlots = useMemo(
+        () => dateSlots.map((s) => ({ time: s, blocked: isSlotBlocked(s, blockedTimes) })),
+        [dateSlots, blockedTimes]
+    );
 
     const total = useMemo(() => {
         if (!pkg) return 0;
@@ -53,8 +100,13 @@ export default function BookingModal({ open, onClose, pkg, type }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!pkg) return;
-        if (!form.name || !form.phone || !form.date) {
+        if (!form.name || !form.phone || !form.date || !form.time) {
             setError(t.booking.error);
+            return;
+        }
+        // Frontend block check
+        if (isSlotBlocked(form.time, blockedTimes)) {
+            setError(t.booking.timeConflict);
             return;
         }
         setSubmitting(true);
@@ -91,7 +143,20 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                 window.open(wa, "_blank");
             }, 600);
         } catch (e) {
-            setError(t.booking.error);
+            const detail = e.response?.data?.detail;
+            const status = e.response?.status;
+            if (status === 409) {
+                setError(typeof detail === "string" ? detail : t.booking.timeConflict);
+                // Refresh availability so the slot becomes visibly blocked
+                if (form.date) {
+                    try {
+                        const r = await axios.get(`${API}/availability`, { params: { date: form.date } });
+                        setBlockedTimes(r.data.blocked_times || []);
+                    } catch {}
+                }
+            } else {
+                setError(typeof detail === "string" ? detail : t.booking.error);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -198,7 +263,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                                     />
                                 </Field>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3">
                                     <Field icon={Users} label={t.booking.participants}>
                                         <input
                                             required
@@ -211,26 +276,75 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                                             data-testid="booking-participants"
                                         />
                                     </Field>
-                                    <Field icon={Clock} label={t.booking.time}>
-                                        <input
-                                            type="time"
-                                            value={form.time}
-                                            onChange={(e) => handleChange("time", e.target.value)}
-                                            className="bk-input"
-                                            data-testid="booking-time"
-                                        />
-                                    </Field>
                                 </div>
                                 <Field icon={Calendar} label={t.booking.date}>
                                     <input
                                         required
                                         type="date"
+                                        min={new Date().toISOString().split("T")[0]}
                                         value={form.date}
                                         onChange={(e) => handleChange("date", e.target.value)}
                                         className="bk-input"
                                         data-testid="booking-date"
                                     />
                                 </Field>
+
+                                {/* Time slots picker */}
+                                <div>
+                                    <span className="font-mono text-[10px] tracking-[0.2em] text-white/60 uppercase mb-1.5 flex items-center gap-2">
+                                        <Clock size={12} className="text-neon-green" />
+                                        {t.booking.time}
+                                    </span>
+                                    {!form.date ? (
+                                        <p className="text-xs text-white/40 italic px-1 py-2">
+                                            {lang === "es" ? "Selecciona primero una fecha" : "Pick a date first"}
+                                        </p>
+                                    ) : dateSlots.length === 0 ? (
+                                        <p className="text-xs text-neon-orange/90 px-1 py-2">
+                                            {t.booking.noSlotsToday}
+                                        </p>
+                                    ) : (
+                                        <div className="grid grid-cols-4 gap-2" data-testid="time-slots-grid">
+                                            {availableSlots.map(({ time: slot, blocked }) => {
+                                                const selected = form.time === slot;
+                                                return (
+                                                    <button
+                                                        type="button"
+                                                        key={slot}
+                                                        disabled={blocked}
+                                                        onClick={() => !blocked && handleChange("time", slot)}
+                                                        data-testid={`time-slot-${slot}`}
+                                                        title={blocked ? t.booking.slotTaken : t.booking.slotAvailable}
+                                                        className={`relative px-2 py-2 rounded-md font-mono text-xs tracking-wider border transition ${
+                                                            blocked
+                                                                ? "border-red-500/30 bg-red-500/5 text-red-400/60 cursor-not-allowed line-through"
+                                                                : selected
+                                                                    ? "border-neon-green bg-neon-green/15 text-neon-green"
+                                                                    : "border-white/15 text-white/80 hover:border-neon-green/60 hover:text-neon-green"
+                                                        }`}
+                                                    >
+                                                        {slot}
+                                                        {blocked && (
+                                                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                    {loadingSlots && (
+                                        <p className="text-[10px] font-mono text-white/40 mt-2">
+                                            {lang === "es" ? "Verificando disponibilidad..." : "Checking availability..."}
+                                        </p>
+                                    )}
+                                    {form.date && dateSlots.length > 0 && (
+                                        <p className="text-[10px] font-mono text-white/40 mt-2">
+                                            {lang === "es"
+                                                ? "Cada reserva ocupa ±1 h alrededor del horario elegido."
+                                                : "Each booking occupies a ±1 hr buffer around the picked slot."}
+                                        </p>
+                                    )}
+                                </div>
                                 <Field icon={MessageSquare} label={t.booking.notes}>
                                     <textarea
                                         rows={2}

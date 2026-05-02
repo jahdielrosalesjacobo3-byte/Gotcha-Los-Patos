@@ -1,0 +1,39 @@
+{
+  "summary": "Iteration 2 regression + new features verified. Backend: 23/23 pytest pass including 3 new availability/conflict tests (empty date → blocked_times=[], create 12:00 → blocks 11:30/12:00/13:00 (|diff|<=60 = 409), 14:00 OK; cancelled booking does NOT block and slot is reusable; conflict_window_minutes=60 returned). Frontend: logo <img> renders real image asset (not HTML fallback), gallery section with 4 parallax photos present, nav GALERÍA button works via scrollTo (data-testid='nav-gallery'), schedule shows 'Sábados y Domingos 10:00 AM - 6:00 PM' + 'Lunes a Viernes 12:00 PM - 4:00 PM', map link points to https://maps.google.com/?q=Gotcha%20Los%20Patos%2052743%20La%20Marquesa, footer social links open correct Facebook/Instagram/TikTok URLs, address 'Gotcha Los Patos, 52743 La Marquesa, Méx.' visible. BookingModal time-slot grid: before date → hint 'Selecciona primero una fecha', weekday 2026-06-15 → 4 slots [12,13,14,15], weekend 2026-06-20 → 8 slots [10-17]. After seeding a 12:00 booking, reopening modal on same date renders 12:00 and 13:00 as disabled+line-through (11:00 isn't a weekday slot for 2026-07-10 Friday so could not be verified on that date, but conflict logic from backend validated). 14:00/15:00 remain enabled as expected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "BookingModal", "issue": "Previously reported React duplicate-key warning still emits many times when modal opens/date changes (Warning: Encountered two children with the same key). Non-fatal but noisy in console.", "selector": "[data-testid='booking-modal']", "priority": "LOW"},
+      {"component": "BookingModal date input", "issue": "Still uses native HTML5 <input type=date> (browser picker) instead of shadcn Calendar/Popover. Already flagged in iteration 1, unchanged.", "selector": "[data-testid='booking-date']", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix duplicate React key warning inside BookingModal (still present from iter 1)",
+    "(Optional polish) Replace native <input type=date> with shadcn Calendar+Popover to match dark tactical theme and localize format"
+  ],
+  "critical_code_review_comments": [
+    "Conflict window logic is symmetric |diff|<=60 so 'exactly 60 min away' blocks (e.g. 12:00 existing → 13:00 rejected). This matches the spec. Verified via pytest.",
+    "GET /api/availability is public with no rate limiting — acceptable given read-only, but bots could poll; consider simple throttling if abused.",
+    "BookingModal fetches availability on every date change but does not refetch after a successful booking for the same date (not a bug in current flow since modal closes, but worth noting).",
+    "Still from iter 1: server.py uses deprecated @app.on_event startup, no login rate-limit/brute-force lockout, CORS allow_origin_regex='.*' + allow_credentials=True is browser-reject combo, secure=False cookie, .to_list(1000) no pagination."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "Admin: gotchalospatos351@gmail.com / GotchaLosPatos376",
+  "seed_data_creation": "Test bookings prefixed TEST_ created during pytest runs and Playwright conflict test; all cleaned up (pytest test_zzz_cleanup + explicit DELETE on the 2026-07-10 12:00 seed).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 2 green. New endpoints/behaviour verified: GET /api/availability (returns {date, blocked_times, conflict_window_minutes:60}), POST /api/bookings returns 409 when |new_t - existing_t| <= 60 min on same date for non-cancelled bookings, cancelled bookings are ignored by the conflict check and do not appear in blocked_times. Frontend time-slot grid with data-testid='time-slot-{HH:MM}' and data-testid='time-slots-grid' working. Gallery section id='gallery' with data-testid='gallery-section' and 4 children data-testid='gallery-photo-0..3'. Navbar uses <button data-testid='nav-gallery'> (not <a href='#gallery'>) — selector for nav must use data-testid. Logo renders real <img> under [data-testid='brand-logo'] img.",
+  "rca of the issue": "N/A — no regressions or failing features detected in iteration 2."
+}

@@ -7,6 +7,7 @@ import { useLang } from "../contexts/LanguageContext";
 const links = [
     { id: "info", key: "info" },
     { id: "packages", key: "packages" },
+    { id: "gallery", key: "gallery" },
     { id: "testimonials", key: "testimonials" },
     { id: "contact", key: "contact" },
 ];

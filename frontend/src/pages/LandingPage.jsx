@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import InfoSection from "../components/InfoSection";
 import Packages from "../components/Packages";
+import Gallery from "../components/Gallery";
 import Testimonials from "../components/Testimonials";
 import CTASection, { Footer } from "../components/CTASection";
 import WhatsAppFAB from "../components/WhatsAppFAB";
@@ -26,6 +27,7 @@ export default function LandingPage() {
             <Hero onBook={() => openBooking()} />
             <InfoSection />
             <Packages onBook={openBooking} />
+            <Gallery />
             <Testimonials />
             <CTASection onBook={() => openBooking()} />
             <Footer />

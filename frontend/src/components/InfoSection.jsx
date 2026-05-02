@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { MapPin, Clock, Mountain, Shield } from "lucide-react";
 import { useLang } from "../contexts/LanguageContext";
-import { SCHEDULE, ADDRESS } from "../data/content";
+import { ADDRESS, ADDRESS_SHORT, MAPS_QUERY, SCHEDULE } from "../data/content";
 
 export default function InfoSection() {
     const { t, lang } = useLang();
@@ -113,7 +113,7 @@ export default function InfoSection() {
                         <p className="text-white/80 text-sm leading-relaxed">{t.info.locationCopy}</p>
                         <p className="font-mono text-xs text-white/60 mt-3">{ADDRESS}</p>
                         <a
-                            href="https://maps.google.com/?q=La+Marquesa+Estado+de+Mexico"
+                            href={`https://maps.google.com/?q=${encodeURIComponent(MAPS_QUERY)}`}
                             target="_blank"
                             rel="noreferrer"
                             className="mt-4 inline-flex font-display tracking-widest text-sm text-neon-green hover:text-white transition"

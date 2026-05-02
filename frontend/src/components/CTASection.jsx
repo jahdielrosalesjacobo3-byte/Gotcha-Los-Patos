@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Facebook, Instagram, MapPin, Phone, Clock, Lock } from "lucide-react";
 import { Logo } from "./Logo";
 import { useLang } from "../contexts/LanguageContext";
-import { ADDRESS, PHONE_DISPLAY, PHONE_WHATSAPP, SCHEDULE } from "../data/content";
+import { ADDRESS, PHONE_DISPLAY, PHONE_WHATSAPP, SCHEDULE, SOCIAL_LINKS } from "../data/content";
 
 const TikTokIcon = (props) => (
     <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" {...props}>
@@ -102,7 +102,9 @@ export function Footer() {
                     </p>
                     <div className="mt-6 flex items-center gap-3">
                         <a
-                            href="#"
+                            href={SOCIAL_LINKS.facebook}
+                            target="_blank"
+                            rel="noreferrer"
                             className="w-10 h-10 rounded-md border border-white/15 flex items-center justify-center hover:border-neon-green hover:text-neon-green transition"
                             data-testid="social-facebook"
                             aria-label="Facebook"
@@ -110,7 +112,9 @@ export function Footer() {
                             <Facebook size={18} />
                         </a>
                         <a
-                            href="#"
+                            href={SOCIAL_LINKS.instagram}
+                            target="_blank"
+                            rel="noreferrer"
                             className="w-10 h-10 rounded-md border border-white/15 flex items-center justify-center hover:border-neon-green hover:text-neon-green transition"
                             data-testid="social-instagram"
                             aria-label="Instagram"
@@ -118,7 +122,9 @@ export function Footer() {
                             <Instagram size={18} />
                         </a>
                         <a
-                            href="#"
+                            href={SOCIAL_LINKS.tiktok}
+                            target="_blank"
+                            rel="noreferrer"
                             className="w-10 h-10 rounded-md border border-white/15 flex items-center justify-center hover:border-neon-green hover:text-neon-green transition"
                             data-testid="social-tiktok"
                             aria-label="TikTok"
