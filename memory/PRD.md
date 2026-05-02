@@ -23,13 +23,23 @@ Stack: React (CRA) + Tailwind + Framer Motion + Three.js + R3F + Drei + Lucide +
 ## Implemented (2025-12)
 - [x] Backend FastAPI con auth JWT (login/me/logout), bookings CRUD público + admin, stats agregados.
 - [x] Admin auto-seed (gotchalospatos351@gmail.com / GotchaLosPatos376) bcrypt.
-- [x] Frontend completo: Navbar, Hero 3D (R3F), InfoSection, Packages, Testimonials (5 reseñas), CTASection, Footer, WhatsApp FAB, BookingModal, AdminLogin, AdminDashboard.
+- [x] Frontend completo: Navbar, Hero 3D (R3F), InfoSection, Packages, Gallery (parallax), Testimonials (5 reseñas), CTASection, Footer, WhatsApp FAB, BookingModal, AdminLogin, AdminDashboard.
 - [x] LanguageContext + AuthContext + traducciones ES/EN completas.
 - [x] WhatsApp prefilled link a wa.me/525560326688.
 - [x] Tailwind theme custom (Anton + Montserrat, neon green/orange/magenta, dark forest bg).
 - [x] Patch a visual-edits babel plugin para soportar primitives R3F.
 - [x] Cap de anticipo: min(300, total) para evitar cobrar más de lo necesario.
-- [x] Tests automáticos: backend 100% (20/20), frontend 95%.
+- [x] Tests automáticos: backend 100% (23/23), frontend 100%.
+
+## Iteration 2 (2025-12)
+- [x] Logo real con imagen asset original (LOGO_URL) en vez de HTML/CSS.
+- [x] Horarios sábado/domingo actualizados a 10:00 AM - 6:00 PM.
+- [x] Dirección Maps actualizada a "Gotcha Los Patos, 52743 La Marquesa, Méx.".
+- [x] URLs reales de redes sociales: Facebook, Instagram, TikTok @gotchalospatos.
+- [x] Galería con efecto parallax: 4 fotos reales con tactical corners + tags + scan animation.
+- [x] Sistema de disponibilidad: GET /api/availability + conflict check (±60 min) en POST /api/bookings (409). Frontend BookingModal usa grid de slots (4 weekday / 8 weekend) con slots ocupados marcados rojos.
+- [x] Cancelled bookings no bloquean slots.
+- [x] Fix: duplicate React key warning en BookingModal (movido `<style>` fuera de AnimatePresence).
 
 ## Backlog / Future Enhancements
 ### P1

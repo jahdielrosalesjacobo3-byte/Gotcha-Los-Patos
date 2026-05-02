@@ -166,9 +166,11 @@ export default function BookingModal({ open, onClose, pkg, type }) {
     const name = lang === "es" ? pkg.nameEs : pkg.nameEn;
 
     return (
+        <>
         <AnimatePresence>
             {open && (
                 <motion.div
+                    key="booking-modal-root"
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -382,24 +384,25 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                     </motion.div>
                 </motion.div>
             )}
-            <style>{`
-                .bk-input {
-                    width: 100%;
-                    padding: 10px 12px 10px 36px;
-                    border-radius: 6px;
-                    background: rgba(255,255,255,0.04);
-                    border: 1px solid rgba(255,255,255,0.12);
-                    color: #fff;
-                    font-size: 14px;
-                    outline: none;
-                    transition: border-color 0.2s;
-                }
-                .bk-input:focus {
-                    border-color: rgba(57,255,20,0.6);
-                    background: rgba(57,255,20,0.05);
-                }
-            `}</style>
         </AnimatePresence>
+        <style>{`
+            .bk-input {
+                width: 100%;
+                padding: 10px 12px 10px 36px;
+                border-radius: 6px;
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(255,255,255,0.12);
+                color: #fff;
+                font-size: 14px;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+            .bk-input:focus {
+                border-color: rgba(57,255,20,0.6);
+                background: rgba(57,255,20,0.05);
+            }
+        `}</style>
+        </>
     );
 }
 
