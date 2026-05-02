@@ -1,0 +1,112 @@
+{
+  "project_name": "Gotcha Los Patos La Marquesa - 3D Landing Page",
+  "theme": "dark",
+  "archetype": "Hybrid: Archetype 2 (Performance Pro / Tactical) + Archetype 7 (Neon Accents)",
+  "emotional_tone": "Adrenaline-pumping, tactical, rugged, immersive, extreme sports chaos.",
+  "design_rules": {
+    "anti_patterns": [
+      "No generic purple/teal gradients.",
+      "No Inter, Roboto, or standard sans-serif for headings.",
+      "No plain white backgrounds.",
+      "No soft, muddy shadows. Use sharp glowing borders instead.",
+      "Avoid sterile corporate layout."
+    ],
+    "spacing_and_layout": {
+      "philosophy": "Generous Spacing (p-6, p-8, p-12) for containers. Tactical Control Room Grid for packages and bento layout for testimonials.",
+      "hero": "100vh absolute positioning for 3D canvas, z-10 for text content.",
+      "sections": "py-24 or py-32 for major sections.",
+      "borders": "1px solid or glassmorphism borders. No border-radius larger than rounded-xl (keep it sharp/tactical)."
+    }
+  },
+  "colors": {
+    "background": {
+      "primary": "#0A0D0A",
+      "surface": "#141A14",
+      "glass": "rgba(10, 13, 10, 0.6)"
+    },
+    "text": {
+      "primary": "#F3F4F6",
+      "secondary": "#9CA3AF",
+      "inverted": "#000000"
+    },
+    "brand": {
+      "neon_green": "#39FF14",
+      "blaze_orange": "#FF4500",
+      "magenta_splatter": "#FF007F"
+    },
+    "borders": {
+      "default": "rgba(255, 255, 255, 0.1)",
+      "active": "rgba(57, 255, 20, 0.5)"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Anton, Impact, sans-serif",
+      "weight": "400",
+      "letter_spacing": "tracking-wider",
+      "case": "uppercase"
+    },
+    "body": {
+      "family": "Montserrat, sans-serif",
+      "weight": "400, 600, 900",
+      "letter_spacing": "tracking-normal"
+    },
+    "scales": {
+      "h1": "text-5xl md:text-6xl lg:text-[clamp(4rem,8vw,7rem)] leading-none",
+      "h2": "text-4xl md:text-5xl leading-tight",
+      "h3": "text-2xl md:text-3xl",
+      "body": "text-base md:text-lg"
+    }
+  },
+  "three_d_strategy": {
+    "library": "React Three Fiber (R3F) + Drei",
+    "scene_description": "A dark, immersive scene with floating 3D spheres representing paintballs (neon green, orange, magenta) and subtle fog. The spheres should have a glossy/metallic material.",
+    "interactions": "Mouse movement should trigger a repulsion force on the spheres (like dodging paint).",
+    "performance": "Use instanced meshes for particles. Wrap Canvas in React Suspense. Fallback to CSS background if R3F fails."
+  },
+  "components": {
+    "navbar": {
+      "style": "Crystal Glassmorphism: backdrop-blur-xl bg-[#0A0D0A]/80 border-b border-white/10 sticky top-0 z-50",
+      "logo_instructions": "Since image generation failed, build the logo using pure HTML/SVG: A neon green CSS rounded circle, inside place red text 'GOTCHA' over 'LOS PATOS', with an absolutely positioned magenta paint splatter SVG/icon and a Lucide user/crosshair icon to represent players.",
+      "actions": "Language Toggle (ES/EN) and primary Book CTA."
+    },
+    "hero": {
+      "layout": "Center aligned over 3D background. Heavy emphasis on H1. Subtle text shadow for readability.",
+      "cta": "Solid Neon Green (#39FF14) button, black text, font-black, hover:scale-105 transition-transform, glowing drop-shadow-[0_0_20px_rgba(57,255,20,0.4)]"
+    },
+    "package_cards": {
+      "layout": "Grid 1 cols mobile, 3 cols desktop.",
+      "style": "Glassmorphism: bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl p-8.",
+      "hover_effect": "Framer motion 3D tilt or Y-translate (-translate-y-2). Border shifts to #39FF14 or #FF4500 on hover.",
+      "content": "Price prominently displayed (Anton font). Features list with Lucide CheckCircle in neon green."
+    },
+    "booking_modal": {
+      "style": "Solid background (#141A14) for readability. Not glass. 1px solid border-white/20.",
+      "features": "Amount total calculation, $300 MXN advance payment notice highlight (in blaze orange)."
+    },
+    "testimonials": {
+      "layout": "Bento Grid ('Tetris' mode). Asymmetrical cards.",
+      "style": "Tactical dark cards with magenta/neon green quote icons. Heavy contrast."
+    },
+    "floating_whatsapp": {
+      "position": "Fixed bottom-right, z-50",
+      "style": "Neon green circle, glowing effect, bouncy entry animation."
+    },
+    "footer": {
+      "style": "Darkest background (#050605), large 'GOTCHA LOS PATOS' outline text (text-transparent stroke-white/10) as texture."
+    }
+  },
+  "media": {
+    "background_forest": "https://images.unsplash.com/photo-1688541197263-7b1af0e920fe?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1Mjh8MHwxfHNlYXJjaHwxfHxwaW5lJTIwZm9yZXN0JTIwZm9nJTIwZGFya3xlbnwwfHx8fDE3Nzc2ODI2MDR8MA&ixlib=rb-4.1.0&q=85",
+    "action_player": "https://images.unsplash.com/photo-1759872138838-45bd5c07ddc6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwxfHxwYWludGJhbGwlMjBwbGF5ZXIlMjBhY3Rpb24lMjBleHRyZW1lJTIwc3BvcnRzfGVufDB8fHx8MTc3NzY4MjYwNHww&ixlib=rb-4.1.0&q=85",
+    "placeholder_splatter": "Use CSS radial-gradients or SVG paths with blur for paint splatters."
+  },
+  "instructions_to_main_agent": [
+    "Strictly use Tailwind + Framer Motion + R3F.",
+    "Avoid Shadcn for the main marketing sections, use raw Tailwind for maximum creative freedom (glassmorphism, bento grids).",
+    "Use Shadcn dialog/form ONLY for the booking modal.",
+    "Implement the ES/EN translation toggle via a simple state context or dictionary object.",
+    "Build the Logo using HTML/Tailwind since image generation failed.",
+    "Apply data-testid to ALL interactive elements (buttons, inputs, cards, toggles)."
+  ]
+}
