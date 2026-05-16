@@ -33,6 +33,7 @@
     "@radix-ui/react-tooltip": "^1.2.4",
     "@react-three/drei": "9.114.3",
     "@react-three/fiber": "8.17.10",
+    "ajv": "^8.20.0",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -62,7 +63,8 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "postinstall": "node scripts/patch-visual-edits-r3f.js"
   },
   "browserslist": {
     "production": [

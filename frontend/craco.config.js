@@ -81,11 +81,16 @@ webpackConfig.devServer = (devServerConfig) => {
   return devServerConfig;
 };
 
-// Wrap with visual edits (automatically adds babel plugin, dev server, and overlay in dev mode)
+// Visual-edits babel plugin injects x-file-name on JSX; that breaks R3F primitives locally.
+// Enable only for Emergent preview (REACT_APP_ENABLE_VISUAL_EDITS=true).
 if (isDevServer) {
   try {
     const { withVisualEdits } = require("@emergentbase/visual-edits/craco");
-    webpackConfig = withVisualEdits(webpackConfig);
+    const enableVisualEdits = process.env.REACT_APP_ENABLE_VISUAL_EDITS === "true";
+    webpackConfig = withVisualEdits(webpackConfig, { enableVisualEdits });
+    if (!enableVisualEdits) {
+      console.info("[visual-edits] Babel plugin disabled (set REACT_APP_ENABLE_VISUAL_EDITS=true to enable).");
+    }
   } catch (err) {
     if (err.code === 'MODULE_NOT_FOUND' && err.message.includes('@emergentbase/visual-edits/craco')) {
       console.warn(
