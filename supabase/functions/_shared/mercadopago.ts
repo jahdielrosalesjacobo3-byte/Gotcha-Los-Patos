@@ -15,7 +15,7 @@ export type PreferencePayload = {
 };
 
 export async function createCheckoutPreference(payload: PreferencePayload) {
-  const siteUrl = (Deno.env.get("SITE_URL") || "https://gotchalospatos.vercel.app").replace(/\/$/, "");
+  const siteUrl = (Deno.env.get("SITE_URL") || "https://www.gotchalospatos.xyz").replace(/\/$/, "");
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!.replace(/\/$/, "");
   const webhookUrl = `${supabaseUrl}/functions/v1/mercadopago-webhook`;
 

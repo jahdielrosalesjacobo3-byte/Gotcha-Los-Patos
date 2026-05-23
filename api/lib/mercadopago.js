@@ -9,7 +9,7 @@ function getMpToken() {
 function siteUrl() {
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, "");
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://scorpioncode.dev";
+  return "https://www.gotchalospatos.xyz";
 }
 
 async function createCheckoutPreference(payload) {

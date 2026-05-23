@@ -11,7 +11,7 @@ type BookingEmail = {
 const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "Gotcha Los Patos <onboarding@resend.dev>";
 
 function siteUrl() {
-  return (Deno.env.get("SITE_URL") || "https://gotchalospatos.vercel.app").replace(/\/$/, "");
+  return (Deno.env.get("SITE_URL") || "https://www.gotchalospatos.xyz").replace(/\/$/, "");
 }
 
 function processingHtml(b: BookingEmail) {

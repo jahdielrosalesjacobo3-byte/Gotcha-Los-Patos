@@ -16,7 +16,7 @@ O en Supabase Dashboard → SQL → pegar `migrations/002_mercadopago_payments.s
 | Secret | Descripción |
 |--------|-------------|
 | `MERCADOPAGO_ACCESS_TOKEN` | Token de producción o `TEST-...` |
-| `SITE_URL` | `https://gotchalospatos.vercel.app` |
+| `SITE_URL` | `https://www.gotchalospatos.xyz` |
 | `RESEND_API_KEY` | API key de Resend |
 | `RESEND_FROM_EMAIL` | Remitente verificado |
 

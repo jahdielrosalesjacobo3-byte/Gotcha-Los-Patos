@@ -2,7 +2,7 @@ const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "Gotcha Los Patos <onboarding@resend.dev>";
 
 function siteUrl() {
-  return (process.env.SITE_URL || "https://scorpioncode.dev").replace(/\/$/, "");
+  return (process.env.SITE_URL || "https://www.gotchalospatos.xyz").replace(/\/$/, "");
 }
 
 function processingHtml(b) {
