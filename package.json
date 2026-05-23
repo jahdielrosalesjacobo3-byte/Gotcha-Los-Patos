@@ -1,0 +1,8 @@
+{
+  "name": "gotcha-los-patos",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix frontend",
+    "vercel-build": "npm install --prefix frontend --legacy-peer-deps && npm run build --prefix frontend"
+  }
+}
