@@ -64,8 +64,8 @@ export const GALLERY_PHOTOS = [
 
 // Horario en minutos desde medianoche para validar slots
 // Slots por hora cerrada
-export const TIME_SLOTS_WEEKDAY = ["12:00", "13:00", "14:00", "15:00"]; // L-V 12-16h
-export const TIME_SLOTS_WEEKEND = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]; // S-D 10-18h
+export const TIME_SLOTS_WEEKDAY = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]; // L-V 10am-6pm
+export const TIME_SLOTS_WEEKEND = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]; // S-D 10am-6pm
 
 export const PACKAGES_INDIVIDUAL = [
     {
@@ -183,11 +183,11 @@ export const TESTIMONIALS = [
 
 export const SCHEDULE = {
     es: [
-        { days: "Lunes a Viernes", hours: "12:00 PM - 4:00 PM" },
+        { days: "Lunes a Viernes", hours: "10:00 AM - 6:00 PM" },
         { days: "Sábados y Domingos", hours: "10:00 AM - 6:00 PM" },
     ],
     en: [
-        { days: "Monday to Friday", hours: "12:00 PM - 4:00 PM" },
+        { days: "Monday to Friday", hours: "10:00 AM - 6:00 PM" },
         { days: "Saturday & Sunday", hours: "10:00 AM - 6:00 PM" },
     ],
 };
