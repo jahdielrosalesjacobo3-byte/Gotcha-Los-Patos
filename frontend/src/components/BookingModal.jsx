@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, Clock, Users, User, Phone, Mail, MessageSquare, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
 import { useLang } from "../contexts/LanguageContext";
 import { DEPOSIT, PHONE_WHATSAPP, TIME_SLOTS_WEEKDAY, TIME_SLOTS_WEEKEND } from "../data/content";
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+import { fetchBlockedTimes, createBooking } from "../lib/bookings";
 
 const toMin = (t) => {
     const [h, m] = t.split(":");
@@ -73,9 +71,8 @@ export default function BookingModal({ open, onClose, pkg, type }) {
         }
         let active = true;
         setLoadingSlots(true);
-        axios
-            .get(`${API}/availability`, { params: { date: form.date } })
-            .then((r) => { if (active) setBlockedTimes(r.data.blocked_times || []); })
+        fetchBlockedTimes(form.date)
+            .then((times) => { if (active) setBlockedTimes(times); })
             .catch(() => { if (active) setBlockedTimes([]); })
             .finally(() => { if (active) setLoadingSlots(false); });
         return () => { active = false; };
@@ -126,7 +123,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                 notes: form.notes,
                 deposit: depositToPay,
             };
-            await axios.post(`${API}/bookings`, payload);
+            await createBooking(payload);
             const wa = buildWhatsappUrl({
                 name: form.name,
                 pkgName: payload.package_name,
@@ -143,19 +140,16 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                 window.open(wa, "_blank");
             }, 600);
         } catch (e) {
-            const detail = e.response?.data?.detail;
-            const status = e.response?.status;
-            if (status === 409) {
-                setError(typeof detail === "string" ? detail : t.booking.timeConflict);
-                // Refresh availability so the slot becomes visibly blocked
+            if (e.status === 409) {
+                setError(e.message || t.booking.timeConflict);
                 if (form.date) {
                     try {
-                        const r = await axios.get(`${API}/availability`, { params: { date: form.date } });
-                        setBlockedTimes(r.data.blocked_times || []);
+                        const times = await fetchBlockedTimes(form.date);
+                        setBlockedTimes(times);
                     } catch {}
                 }
             } else {
-                setError(typeof detail === "string" ? detail : t.booking.error);
+                setError(e.message || t.booking.error);
             }
         } finally {
             setSubmitting(false);

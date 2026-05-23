@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
 import { useNavigate, Navigate } from "react-router-dom";
 import { LogOut, RefreshCw, Trash2, CheckCircle2, XCircle, Clock, Calendar, Phone, Users, DollarSign, TrendingUp } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LanguageContext";
 import { Logo } from "../components/Logo";
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+import {
+  fetchAdminBookings,
+  updateBookingStatus,
+  deleteBooking,
+  computeStats,
+} from "../lib/bookings";
 
 const STATUS_COLORS = {
     pending: { color: "#FF4500", label: "Pendiente", labelEn: "Pending" },
@@ -24,29 +27,18 @@ export default function AdminDashboard() {
     const [busy, setBusy] = useState(false);
     const [filter, setFilter] = useState("all");
 
-    const auth = useCallback(() => {
-        const token = localStorage.getItem("admin_token");
-        return {
-            withCredentials: true,
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-        };
-    }, []);
-
     const fetchAll = useCallback(async () => {
         setBusy(true);
         try {
-            const [b, s] = await Promise.all([
-                axios.get(`${API}/admin/bookings`, auth()),
-                axios.get(`${API}/admin/stats`, auth()),
-            ]);
-            setBookings(b.data);
-            setStats(s.data);
+            const rows = await fetchAdminBookings();
+            setBookings(rows);
+            setStats(computeStats(rows));
         } catch (e) {
             console.error(e);
         } finally {
             setBusy(false);
         }
-    }, [auth]);
+    }, []);
 
     useEffect(() => {
         if (user && user.role === "admin") fetchAll();
@@ -57,7 +49,7 @@ export default function AdminDashboard() {
 
     const updateStatus = async (id, status) => {
         try {
-            await axios.patch(`${API}/admin/bookings/${id}`, { status }, auth());
+            await updateBookingStatus(id, status);
             fetchAll();
         } catch (e) { console.error(e); }
     };
@@ -65,7 +57,7 @@ export default function AdminDashboard() {
     const removeBooking = async (id) => {
         if (!window.confirm(lang === "es" ? "¿Eliminar reserva?" : "Delete booking?")) return;
         try {
-            await axios.delete(`${API}/admin/bookings/${id}`, auth());
+            await deleteBooking(id);
             fetchAll();
         } catch (e) { console.error(e); }
     };

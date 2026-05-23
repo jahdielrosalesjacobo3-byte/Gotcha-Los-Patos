@@ -31,8 +31,13 @@ export default function AdminLogin() {
                 setError(lang === "es" ? "Acceso restringido al personal." : "Staff access only.");
             }
         } catch (err) {
-            const detail = err.response?.data?.detail;
-            setError(typeof detail === "string" ? detail : (lang === "es" ? "Credenciales inválidas." : "Invalid credentials."));
+            if (err.code === "forbidden") {
+                setError(lang === "es" ? "Acceso restringido al personal." : "Staff access only.");
+            } else if (err.message?.includes("Invalid login credentials")) {
+                setError(lang === "es" ? "Credenciales inválidas." : "Invalid credentials.");
+            } else {
+                setError(err.message || (lang === "es" ? "Credenciales inválidas." : "Invalid credentials."));
+            }
         } finally {
             setSubmitting(false);
         }
