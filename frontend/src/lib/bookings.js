@@ -32,33 +32,18 @@ export async function fetchBlockedTimes(date) {
 }
 
 export async function createBookingCheckout(payload) {
-  const { data, error } = await supabase.functions.invoke(
-    "create-booking-checkout",
-    { body: payload },
-  );
+  const apiBase = process.env.REACT_APP_API_URL || "";
+  const res = await fetch(`${apiBase}/api/create-booking-checkout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-  if (error) {
-    const ctx = error.context;
-    if (ctx && typeof ctx.json === "function") {
-      try {
-        const body = await ctx.json();
-        if (body?.error) {
-          const err = new Error(body.error);
-          if (body.error.includes("ocupado")) err.status = 409;
-          throw err;
-        }
-      } catch (parseErr) {
-        if (parseErr?.status === 409) throw parseErr;
-      }
-    }
-    throw error;
-  }
+  const data = await res.json().catch(() => ({}));
 
-  if (data?.error) {
-    const err = new Error(data.error);
-    if (data.error.includes("ocupado")) {
-      err.status = 409;
-    }
+  if (!res.ok) {
+    const err = new Error(data.error || "Error al crear la reserva");
+    if (res.status === 409) err.status = 409;
     throw err;
   }
 
