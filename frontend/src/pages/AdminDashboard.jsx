@@ -12,8 +12,8 @@ import {
 } from "../lib/bookings";
 
 const STATUS_COLORS = {
-    pending: { color: "#FF4500", label: "Pendiente", labelEn: "Pending" },
-    confirmed: { color: "#39FF14", label: "Confirmada", labelEn: "Confirmed" },
+    processing: { color: "#FF4500", label: "En proceso", labelEn: "Processing" },
+    confirmed: { color: "#39FF14", label: "Aceptada", labelEn: "Confirmed" },
     cancelled: { color: "#FF007F", label: "Cancelada", labelEn: "Cancelled" },
     completed: { color: "#9CA3AF", label: "Completada", labelEn: "Completed" },
 };
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
                 {stats && (
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8" data-testid="admin-stats">
                         <StatCard icon={Calendar} label={lang === "es" ? "Total" : "Total"} value={stats.total} color="#39FF14" />
-                        <StatCard icon={Clock} label={lang === "es" ? "Pendientes" : "Pending"} value={stats.pending} color="#FF4500" />
+                        <StatCard icon={Clock} label={lang === "es" ? "En proceso" : "Processing"} value={stats.processing} color="#FF4500" />
                         <StatCard icon={CheckCircle2} label={lang === "es" ? "Confirmadas" : "Confirmed"} value={stats.confirmed} color="#39FF14" />
                         <StatCard icon={XCircle} label={lang === "es" ? "Canceladas" : "Cancelled"} value={stats.cancelled} color="#FF007F" />
                         <StatCard icon={DollarSign} label={lang === "es" ? "Anticipos" : "Deposits"} value={`$${stats.collected_deposits.toLocaleString()}`} color="#39FF14" />
@@ -106,7 +106,7 @@ export default function AdminDashboard() {
 
                 {/* Filters */}
                 <div className="flex flex-wrap items-center gap-2 mb-5">
-                    {["all", "pending", "confirmed", "cancelled", "completed"].map(f => (
+                    {["all", "processing", "confirmed", "cancelled", "completed"].map(f => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
                         </div>
                     )}
                     {filtered.map(b => {
-                        const sc = STATUS_COLORS[b.status] || STATUS_COLORS.pending;
+                        const sc = STATUS_COLORS[b.status] || STATUS_COLORS.processing;
                         return (
                             <div key={b.id} className="glass rounded-md p-5 border border-white/10" data-testid={`booking-row-${b.id}`}>
                                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -148,15 +148,13 @@ export default function AdminDashboard() {
                                             <Info icon={DollarSign} value={`$${b.package_price} (${b.package_name})`} />
                                         </div>
                                         {b.notes && <p className="mt-3 text-sm text-white/70 italic">"{b.notes}"</p>}
-                                        {b.email && <p className="mt-2 font-mono text-[11px] text-white/50">{b.email}</p>}
+                                        <p className="mt-2 font-mono text-[11px] text-white/50">{b.email}</p>
+                                        <p className="mt-1 font-mono text-[10px] text-neon-orange/80">Pago: {b.payment_status || "—"}</p>
                                         <p className="mt-2 font-mono text-[10px] text-white/40">
                                             {new Date(b.created_at).toLocaleString()}
                                         </p>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2">
-                                        <button onClick={() => updateStatus(b.id, "confirmed")} className="px-3 py-1.5 rounded text-xs font-mono tracking-wider bg-neon-green/15 text-neon-green border border-neon-green/40 hover:bg-neon-green/25" data-testid={`confirm-${b.id}`}>
-                                            CONFIRMAR
-                                        </button>
                                         <button onClick={() => updateStatus(b.id, "completed")} className="px-3 py-1.5 rounded text-xs font-mono tracking-wider bg-white/5 text-white/70 border border-white/15 hover:bg-white/10" data-testid={`complete-${b.id}`}>
                                             COMPLETAR
                                         </button>

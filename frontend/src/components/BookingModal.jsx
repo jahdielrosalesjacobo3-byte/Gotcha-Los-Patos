@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, Users, User, Phone, Mail, MessageSquare, CheckCircle2, AlertTriangle, Shield } from "lucide-react";
+import { X, Calendar, Clock, Users, User, Phone, Mail, MessageSquare, AlertTriangle, Shield } from "lucide-react";
 import { useLang } from "../contexts/LanguageContext";
-import { DEPOSIT, PHONE_WHATSAPP, TIME_SLOTS_WEEKDAY, TIME_SLOTS_WEEKEND } from "../data/content";
-import { fetchBlockedTimes, createBooking } from "../lib/bookings";
+import { DEPOSIT, TIME_SLOTS_WEEKDAY, TIME_SLOTS_WEEKEND } from "../data/content";
+import { fetchBlockedTimes, createBookingCheckout } from "../lib/bookings";
 
 const toMin = (t) => {
     const [h, m] = t.split(":");
@@ -25,12 +25,6 @@ const slotsForDate = (dateStr) => {
     return wd === 0 || wd === 6 ? TIME_SLOTS_WEEKEND : TIME_SLOTS_WEEKDAY;
 };
 
-function buildWhatsappUrl({ name, pkgName, participants, date, time, deposit, total, lang }) {
-    const txt = lang === "es"
-        ? `Hola! Soy *${name}*. Quiero confirmar mi reserva en *Gotcha Los Patos La Marquesa*.\n\n📦 Paquete: *${pkgName}*\n👥 Participantes: ${participants}\n📅 Fecha: ${date}\n⏰ Hora: ${time}\n💵 Total: $${total} MXN\n💳 Anticipo a pagar hoy: $${deposit} MXN`
-        : `Hi! I'm *${name}*. I want to confirm my booking at *Gotcha Los Patos La Marquesa*.\n\n📦 Package: *${pkgName}*\n👥 Participants: ${participants}\n📅 Date: ${date}\n⏰ Time: ${time}\n💵 Total: $${total} MXN\n💳 Deposit today: $${deposit} MXN`;
-    return `https://wa.me/${PHONE_WHATSAPP}?text=${encodeURIComponent(txt)}`;
-}
 
 export default function BookingModal({ open, onClose, pkg, type }) {
     const { t, lang } = useLang();
@@ -44,14 +38,12 @@ export default function BookingModal({ open, onClose, pkg, type }) {
         notes: "",
     });
     const [submitting, setSubmitting] = useState(false);
-    const [success, setSuccess] = useState(null); // null | { whatsappUrl }
     const [error, setError] = useState("");
     const [blockedTimes, setBlockedTimes] = useState([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
 
     useEffect(() => {
         if (open) {
-            setSuccess(null);
             setError("");
             setBlockedTimes([]);
             setForm((f) => ({
@@ -97,7 +89,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!pkg) return;
-        if (!form.name || !form.phone || !form.date || !form.time) {
+        if (!form.name || !form.phone || !form.email?.trim() || !form.date || !form.time) {
             setError(t.booking.error);
             return;
         }
@@ -123,22 +115,8 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                 notes: form.notes,
                 deposit: depositToPay,
             };
-            await createBooking(payload);
-            const wa = buildWhatsappUrl({
-                name: form.name,
-                pkgName: payload.package_name,
-                participants: payload.participants,
-                date: form.date,
-                time: form.time,
-                deposit: depositToPay,
-                total,
-                lang,
-            });
-            setSuccess({ whatsappUrl: wa });
-            // Auto-redirect to WhatsApp after short delay
-            setTimeout(() => {
-                window.open(wa, "_blank");
-            }, 600);
+            const { checkout_url } = await createBookingCheckout(payload);
+            window.location.href = checkout_url;
         } catch (e) {
             if (e.status === 409) {
                 setError(e.message || t.booking.timeConflict);
@@ -202,27 +180,7 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                             </button>
                         </div>
 
-                        {success ? (
-                            <div className="p-6 text-center" data-testid="booking-success">
-                                <div className="w-16 h-16 rounded-full bg-neon-green/20 flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle2 className="text-neon-green" size={36} />
-                                </div>
-                                <h4 className="font-display text-2xl tracking-wider text-white mb-2">
-                                    {t.booking.successTitle}
-                                </h4>
-                                <p className="text-sm text-white/70 mb-6">{t.booking.successBody}</p>
-                                <a
-                                    href={success.whatsappUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="btn-neon inline-flex px-6 py-3 rounded-md text-sm"
-                                    data-testid="booking-success-whatsapp"
-                                >
-                                    {t.booking.confirm}
-                                </a>
-                            </div>
-                        ) : (
-                            <form className="p-6 space-y-4" onSubmit={handleSubmit}>
+                        <form className="p-6 space-y-4" onSubmit={handleSubmit}>
                                 <div className="rounded-md border border-neon-orange/40 bg-neon-orange/10 p-4 flex items-start gap-3">
                                     <Shield className="text-neon-orange mt-0.5" size={18} />
                                     <p className="text-xs text-white/85 leading-relaxed">
@@ -251,7 +209,9 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                                 </Field>
                                 <Field icon={Mail} label={t.booking.email}>
                                     <input
+                                        required
                                         type="email"
+                                        autoComplete="email"
                                         value={form.email}
                                         onChange={(e) => handleChange("email", e.target.value)}
                                         className="bk-input"
@@ -371,10 +331,9 @@ export default function BookingModal({ open, onClose, pkg, type }) {
                                     className="btn-neon w-full px-5 py-3.5 rounded-md text-sm disabled:opacity-60"
                                     data-testid="booking-submit"
                                 >
-                                    {submitting ? t.booking.sending : t.booking.confirm}
+                                    {submitting ? t.booking.sending : t.booking.payCta}
                                 </button>
                             </form>
-                        )}
                     </motion.div>
                 </motion.div>
             )}

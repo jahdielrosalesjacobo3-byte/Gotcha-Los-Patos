@@ -15,8 +15,11 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-const sqlPath = path.join(__dirname, "../migrations/001_initial_schema.sql");
-const sql = fs.readFileSync(sqlPath, "utf8");
+const migrationsDir = path.join(__dirname, "../migrations");
+const files = fs
+  .readdirSync(migrationsDir)
+  .filter((f) => f.endsWith(".sql"))
+  .sort();
 
 const rawUrl = databaseUrl.replace(/[?&]sslmode=[^&]*/g, "").replace(/\?$/, "");
 const client = new pg.Client({
@@ -26,8 +29,12 @@ const client = new pg.Client({
 
 try {
   await client.connect();
-  await client.query(sql);
-  console.log("Migración aplicada correctamente.");
+  for (const file of files) {
+    const sql = fs.readFileSync(path.join(migrationsDir, file), "utf8");
+    console.log(`Aplicando ${file}...`);
+    await client.query(sql);
+  }
+  console.log("Migraciones aplicadas correctamente.");
 } catch (err) {
   console.error("Error aplicando migración:", err.message);
   process.exit(1);

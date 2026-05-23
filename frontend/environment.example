@@ -1,8 +1,15 @@
-# Variables para Vercel (Settings → Environment Variables)
-# Create React App requiere el prefijo REACT_APP_
-
+# === Frontend (Vercel) ===
 REACT_APP_SUPABASE_URL=https://tu-proyecto.supabase.co
 REACT_APP_SUPABASE_ANON_KEY=tu-anon-key
 
-# Ya no se usa el backend FastAPI en producción:
-# REACT_APP_BACKEND_URL=
+# === Supabase Edge Functions (secrets en Supabase Dashboard) ===
+# MERCADOPAGO_ACCESS_TOKEN=APP_USR-... o TEST-... para sandbox
+# SITE_URL=https://gotchalospatos.vercel.app
+# RESEND_API_KEY=re_...
+# RESEND_FROM_EMAIL=Gotcha Los Patos <reservas@tudominio.com>
+
+# Mercado Pago: crea app en https://www.mercadopago.com.mx/developers
+# Webhook URL: https://TU_PROYECTO.supabase.co/functions/v1/mercadopago-webhook
+# Vincula tu cuenta BBVA en Mercado Pago → retiros a tu banco
+
+# Resend: https://resend.com para correos de confirmación
