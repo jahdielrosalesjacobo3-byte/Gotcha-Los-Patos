@@ -1,0 +1,3 @@
+# Copia como variables en Vercel → Settings → Environment Variables
+# URL pública del backend FastAPI (sin barra final)
+REACT_APP_BACKEND_URL=https://tu-backend.ejemplo.com
