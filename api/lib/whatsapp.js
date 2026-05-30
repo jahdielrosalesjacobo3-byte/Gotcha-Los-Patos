@@ -23,7 +23,7 @@ function normalizePhone(raw) {
 
 function adminPhone() {
   return normalizePhone(
-    process.env.WHATSAPP_ADMIN_PHONE || "525560326688",
+    process.env.WHATSAPP_ADMIN_PHONE || "525531247211",
   );
 }
 

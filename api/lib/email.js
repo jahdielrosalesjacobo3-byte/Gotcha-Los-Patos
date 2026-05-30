@@ -34,7 +34,7 @@ function confirmedHtml(b) {
         <li><strong>Hora:</strong> ${b.slot_time}</li>
         <li><strong>Anticipo:</strong> $${b.deposit} MXN</li>
       </ul>
-      <p>El saldo restante se paga el día de tu visita. WhatsApp: +52 55 6032 6688</p>
+      <p>El saldo restante se paga el día de tu visita. WhatsApp: +52 55 3124 7211</p>
       <p style="color:#666;font-size:12px">${siteUrl()}</p>
     </div>
   `;

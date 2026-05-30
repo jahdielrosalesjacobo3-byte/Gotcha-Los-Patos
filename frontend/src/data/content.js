@@ -1,6 +1,6 @@
 // Bilingual translations + business data
-export const PHONE_WHATSAPP = "525560326688"; // wa.me format (no plus)
-export const PHONE_DISPLAY = "+52 55 6032 6688";
+export const PHONE_WHATSAPP = "525531247211"; // wa.me format (no plus)
+export const PHONE_DISPLAY = "+52 55 3124 7211";
 export const ADDRESS = "Gotcha Los Patos, 52743 La Marquesa, Méx.";
 export const ADDRESS_SHORT = "La Marquesa, Estado de México";
 export const MAPS_QUERY = "Gotcha Los Patos 52743 La Marquesa";

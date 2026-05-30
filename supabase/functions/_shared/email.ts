@@ -46,7 +46,7 @@ function confirmedHtml(b: BookingEmail) {
         <li><strong>Anticipo pagado:</strong> $${b.deposit} MXN</li>
       </ul>
       <p>El saldo restante se paga el día de tu visita. ¡Nos vemos en el campo!</p>
-      <p>WhatsApp: +52 55 6032 6688</p>
+      <p>WhatsApp: +52 55 3124 7211</p>
       <p style="color:#666;font-size:12px">${siteUrl()}</p>
     </div>
   `;

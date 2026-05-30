@@ -25,7 +25,7 @@ Stack: React (CRA) + Tailwind + Framer Motion + Three.js + R3F + Drei + Lucide +
 - [x] Admin auto-seed (gotchalospatos351@gmail.com / GotchaLosPatos376) bcrypt.
 - [x] Frontend completo: Navbar, Hero 3D (R3F), InfoSection, Packages, Gallery (parallax), Testimonials (5 reseñas), CTASection, Footer, WhatsApp FAB, BookingModal, AdminLogin, AdminDashboard.
 - [x] LanguageContext + AuthContext + traducciones ES/EN completas.
-- [x] WhatsApp prefilled link a wa.me/525560326688.
+- [x] WhatsApp prefilled link a wa.me/525531247211.
 - [x] Tailwind theme custom (Anton + Montserrat, neon green/orange/magenta, dark forest bg).
 - [x] Patch a visual-edits babel plugin para soportar primitives R3F.
 - [x] Cap de anticipo: min(300, total) para evitar cobrar más de lo necesario.

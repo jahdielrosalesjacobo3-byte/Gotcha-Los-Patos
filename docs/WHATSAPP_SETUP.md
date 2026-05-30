@@ -42,7 +42,7 @@ Tienes dos caminos:
 - WhatsApp → **API Setup** → Meta te da un número de prueba.
 - Agrega **tu celular** como destinatario de prueba (hasta 5 números).
 
-### B) Tu número real `+52 55 6032 6688` (producción)
+### B) Tu número real `+52 55 3124 7211` (producción)
 - WhatsApp → **Phone numbers** → **Add phone number**.
 - Migra el número a WhatsApp Business API (deja de funcionar en la app normal de WhatsApp en ese teléfono).
 - Completa verificación con Meta.
@@ -85,7 +85,7 @@ En **Vercel → gotchalospatos → Settings → Environment Variables** (Product
 | `WHATSAPP_ACCESS_TOKEN` | Token de Meta |
 | `WHATSAPP_PHONE_NUMBER_ID` | ID numérico del teléfono |
 | `WHATSAPP_VERIFY_TOKEN` | La clave que pusiste en el webhook |
-| `WHATSAPP_ADMIN_PHONE` | `525560326688` (avisos al dueño) |
+| `WHATSAPP_ADMIN_PHONE` | `525531247211` (avisos al dueño) |
 | `SITE_URL` | `https://www.gotchalospatos.xyz` |
 
 Redeploy después de guardar.
