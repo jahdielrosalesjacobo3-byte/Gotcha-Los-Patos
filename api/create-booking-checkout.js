@@ -1,6 +1,10 @@
 const { getServiceClient } = require("./lib/supabase");
 const { createCheckoutPreference } = require("./lib/mercadopago");
 const { sendProcessingEmail } = require("./lib/email");
+const {
+  notifyBookingProcessing,
+  notifyAdminNewBooking,
+} = require("./lib/whatsapp-notify");
 
 function validate(body) {
   if (!body.name?.trim() || body.name.trim().length < 2) {
@@ -108,6 +112,13 @@ module.exports = async function handler(req, res) {
       token.startsWith("TEST-") && preference.sandbox_init_point
         ? preference.sandbox_init_point
         : preference.init_point;
+
+    try {
+      await notifyBookingProcessing(booking, checkoutUrl);
+      await notifyAdminNewBooking(booking);
+    } catch (waErr) {
+      console.error("[checkout] whatsapp:", waErr);
+    }
 
     json(res, 200, { booking_id: booking.id, checkout_url: checkoutUrl });
   } catch (err) {

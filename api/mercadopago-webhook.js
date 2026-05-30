@@ -1,6 +1,10 @@
 const { getServiceClient } = require("./lib/supabase");
 const { getPayment } = require("./lib/mercadopago");
 const { sendConfirmedEmail } = require("./lib/email");
+const {
+  notifyBookingConfirmed,
+  notifyAdminPaymentConfirmed,
+} = require("./lib/whatsapp-notify");
 
 async function applyPaymentUpdate(paymentId) {
   const payment = await getPayment(paymentId);
@@ -58,6 +62,12 @@ async function applyPaymentUpdate(paymentId) {
       });
     } catch (emailErr) {
       console.error("[webhook] email:", emailErr);
+    }
+    try {
+      await notifyBookingConfirmed(booking);
+      await notifyAdminPaymentConfirmed(booking);
+    } catch (waErr) {
+      console.error("[webhook] whatsapp:", waErr);
     }
   }
 }

@@ -2,12 +2,20 @@
 REACT_APP_SUPABASE_URL=https://tu-proyecto.supabase.co
 REACT_APP_SUPABASE_ANON_KEY=tu-anon-key
 
-# === Vercel API (pagos y correos) ===
+# === Vercel API (pagos, correos, WhatsApp) ===
 # SITE_URL=https://www.gotchalospatos.xyz
 # MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
 # RESEND_API_KEY=re_...
 # RESEND_FROM_EMAIL=Gotcha Los Patos <reservas@gotchalospatos.xyz>
-# SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY (integración Supabase)
 
-# Webhook Mercado Pago:
+# WhatsApp Cloud API (Meta)
+# WHATSAPP_ACCESS_TOKEN=
+# WHATSAPP_PHONE_NUMBER_ID=
+# WHATSAPP_VERIFY_TOKEN=gotcha_wa_verify_2026
+# WHATSAPP_ADMIN_PHONE=525560326688
+
+# Webhooks:
 # https://www.gotchalospatos.xyz/api/mercadopago-webhook
+# https://www.gotchalospatos.xyz/api/whatsapp-webhook
+
+# Guía completa: docs/WHATSAPP_SETUP.md
