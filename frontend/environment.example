@@ -13,6 +13,7 @@ REACT_APP_SUPABASE_ANON_KEY=tu-anon-key
 # WHATSAPP_PHONE_NUMBER_ID=
 # WHATSAPP_VERIFY_TOKEN=gotcha_wa_verify_2026
 # WHATSAPP_ADMIN_PHONE=525531247211
+# WHATSAPP_PERSONAL_PHONE=525560326688  (atención personalizada vía bot)
 
 # Webhooks:
 # https://www.gotchalospatos.xyz/api/mercadopago-webhook

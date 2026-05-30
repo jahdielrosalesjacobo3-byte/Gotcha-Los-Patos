@@ -86,9 +86,25 @@ En **Vercel → gotchalospatos → Settings → Environment Variables** (Product
 | `WHATSAPP_PHONE_NUMBER_ID` | ID numérico del teléfono |
 | `WHATSAPP_VERIFY_TOKEN` | La clave que pusiste en el webhook |
 | `WHATSAPP_ADMIN_PHONE` | `525531247211` (avisos al dueño) |
+| `META_APP_ID` | ID de la app en developers.facebook.com (solo para actualizar foto de perfil) |
 | `SITE_URL` | `https://www.gotchalospatos.xyz` |
 
 Redeploy después de guardar.
+
+---
+
+## Paso 6b — Foto y perfil de negocio (opcional)
+
+El logo está en `frontend/public/whatsapp-profile.png`. Para subirlo o cambiar datos del perfil:
+
+```bash
+WHATSAPP_ACCESS_TOKEN='...' \
+WHATSAPP_PHONE_NUMBER_ID='1181134105074580' \
+META_APP_ID='4244165719228526' \
+node scripts/update-whatsapp-profile.mjs
+```
+
+Actualiza: foto, *about*, descripción, dirección, email, sitio web y categoría (*ENTERTAIN*).
 
 ---
 
@@ -103,12 +119,15 @@ Redeploy después de guardar.
 
 ## Comandos del bot (palabras clave)
 
-- `hola` / `menu` — Menú principal  
+- `hola` / `menu` — Menú principal (tono cálido, variado)  
 - `horarios` — 10am–6pm todos los días  
 - `precios` — Lista de paquetes  
 - `ubicacion` — Dirección + Maps  
 - `reservar` — Link a la web  
 - `estado` — Tus reservas (por número de WhatsApp)  
+- `asesor` — Atención personalizada → **+52 55 6032 6688** (`525560326688`)  
+
+Variable opcional: `WHATSAPP_PERSONAL_PHONE=525560326688` (número de atención humana).
 
 ---
 
@@ -127,6 +146,8 @@ api/whatsapp-webhook.js      ← Webhook Meta (GET verify + POST mensajes)
 api/lib/whatsapp.js          ← Enviar mensajes (Graph API)
 api/lib/whatsapp-bot.js      ← FAQ y consulta de reservas
 api/lib/whatsapp-notify.js   ← Notificaciones de reserva/pago
+scripts/update-whatsapp-profile.mjs  ← Foto y datos del perfil Business
+frontend/public/whatsapp-profile.png   ← Logo circular del negocio
 ```
 
 ---

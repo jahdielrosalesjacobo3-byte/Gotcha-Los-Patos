@@ -7,45 +7,147 @@ const SITE = (process.env.SITE_URL || "https://www.gotchalospatos.xyz").replace(
   "",
 );
 
-const MENU = `🎯 *Gotcha Los Patos La Marquesa*
+const PERSONAL_PHONE =
+  process.env.WHATSAPP_PERSONAL_PHONE || "525560326688";
+const PERSONAL_DISPLAY = "+52 55 6032 6688";
 
-Elige una opción o escribe una palabra clave:
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
-1️⃣ *horarios* — Horario de operación
-2️⃣ *precios* — Paquetes y costos
-3️⃣ *ubicacion* — Cómo llegar
-4️⃣ *reservar* — Reservar en la web
-5️⃣ *estado* — Ver tus reservas (con este número)
+// Saludos de apertura — cortos, cálidos, distintos cada vez
+const WELCOME_OPENER = [
+  "¡Hola! 👋 Qué gusto que nos escribas.",
+  "¡Hey! 🎯 Bienvenido a Gotcha Los Patos.",
+  "¡Qué onda! 🦆 Gracias por contactarnos.",
+  "¡Hola, campeón! 👋 Me da gusto saludarte.",
+];
 
-También puedes escribir *menu* en cualquier momento.
+// Gancho emocional — explica quiénes somos e incita a visitar
+const WELCOME_PITCH = [
+  `Somos *Gotcha Los Patos La Marquesa*: paintball en *bosque de verdad*, no en un salón cerrado. A 30 min de la CDMX vives una misión con amigos, familia o compañeros de trabajo — risas, adrenalina y recuerdos que se quedan.
 
-🌐 Reserva en línea: ${SITE}`;
+¿Primera vez? No te preocupes: te equipamos, te orientamos y te haces sentir parte del squad desde el primer minuto.`,
+  `Aquí no vienes solo a disparar balas — vienes a *desconectarte de la rutina* y conectar con tu gente en plena naturaleza. La Marquesa es el escenario perfecto: pinos, aire fresco y esa emoción de gritar "¡lo logramos!" con tu equipo.
 
-const PRICES = `💰 *Paquetes individuales* (por persona)
-• Paquete 1 — $160 MXN (100 balas)
-• Paquete 2 — $190 MXN (110 balas) ⭐
-• Paquete 3 — $240 MXN (150 balas + guantes)
+Cada grupo vive su propia aventura. La tuya empieza cuando tú quieras.`,
+  `Imagina un sábado diferente: tú y tu crew en el bosque, chalecos puestos, estrategia en mente y cero estrés de la ciudad. Eso es lo que hacemos en *Gotcha Los Patos* — experiencias que se sienten únicas porque *cada visita es distinta*.
 
-👨‍👩‍👧‍👦 *Paquetes familiares*
-• Familiar 1 — $2,500 (10 pers., 2,000 balas)
-• Familiar 2 — $2,800 (10 pers., overoles) ⭐
-• Familiar 3 — $5,200 (16 pers., 4,000 balas)
+Estamos a un paso de la CDMX y con ganas de recibirte.`,
+];
 
-💳 Anticipo de reserva: *$300 MXN* (resto el día de la visita)
+const MENU_OPTIONS = `Cuéntame, ¿por dónde empezamos?
 
-Reserva: ${SITE}`;
+1️⃣ *horarios* — ¿Cuándo podemos recibirte?
+2️⃣ *precios* — Paquetes para ti o tu grupo
+3️⃣ *ubicacion* — Cómo llegar al campo
+4️⃣ *reservar* — Aparta tu fecha ya
+5️⃣ *estado* — Revisa tus reservas
 
-const SCHEDULE = `🕐 *Horarios*
-Lunes a domingo: *10:00 AM – 6:00 PM*
+¿Cumpleaños, empresa o algo a la medida? Escribe *asesor* y te conectamos con el equipo.
 
-Cada reserva ocupa ±1 h alrededor del horario elegido.`;
+🌐 Reserva directo: ${SITE}`;
 
-const LOCATION = `📍 *Ubicación*
-Gotcha Los Patos
+function buildReply({ opener, explain, details, invite }) {
+  const parts = [opener, explain, details, invite].filter(Boolean);
+  return parts.join("\n\n");
+}
+
+const REPLY_SCHEDULE = () =>
+  buildReply({
+    opener: pick([
+      "¡Qué padre que ya estés pensando en venir! 🌲",
+      "¡Me encanta que quieras planear tu visita! 🎯",
+    ]),
+    explain:
+      "Abrimos *todos los días* porque sabemos que la mejor escapada no espera al fin de semana. Entre semana hay menos gente y más espacio para que tu squad disfrute el bosque a su ritmo; el fin de semana la energía sube y el ambiente se pone increíble.",
+    details:
+      "🕐 *Horario:* Lunes a domingo, *10:00 AM – 6:00 PM*\n\nTu reserva cubre ±1 hora alrededor del horario que elijas — llega con calma, respira aire de montaña y disfruta sin prisa.",
+    invite:
+      "¿Ya tienes fecha en mente? Escribe *reservar* y te ayudo a apartarla. ¡Te va a encantar salir de la ciudad aunque sea un ratito! 😊",
+  });
+
+const REPLY_PRICES = () =>
+  buildReply({
+    opener: "¡Claro! Te platico cómo armamos la experiencia 💰",
+    explain:
+      "No pagas solo por balas — pagas por *salir de lo ordinary*: equipo completo, campo en bosque real y ese rush de adrenalina con tu gente. Tenemos opciones para quien viene solo, en pareja o con todo el squad.",
+    details:
+      `*Por persona:*
+• Paquete 1 — $160 · 100 balas · perfecto para estrenarte
+• Paquete 2 — $190 · 110 balas ⭐ · el más pedido
+• Paquete 3 — $240 · 150 balas + guantes · modo pro
+
+*Grupos (10+ personas):*
+• Familiar 1 — $2,500 · 10 pers., 2,000 balas
+• Familiar 2 — $2,800 · 10 pers. + overoles ⭐
+• Familiar 3 — $5,200 · 16 pers., 4,000 balas
+
+💳 Solo apartas con *$300 MXN* — el resto lo pagas el día que nos visites.`,
+    invite:
+      `¿Te late alguno? Aparta tu lugar aquí 👇\n${SITE}\n\n¿Grupo grande o evento especial? Escribe *asesor* y te armamos algo a tu medida.`,
+  });
+
+const REPLY_LOCATION = () =>
+  buildReply({
+    opener: pick([
+      "¡Te esperamos con los chalecos listos! 📍",
+      "¡Qué emoción que quieras conocernos en persona! 🌲",
+    ]),
+    explain:
+      "Estamos en *La Marquesa*, uno de los rincones más bonitos cerca de la CDMX. Sales de la ciudad, cruzas la México–Toluca y en unos 30 minutos ya estás entre pinos, aire fresco y el campo donde tu equipo va a vivir su misión. No es gotcha cualquiera — es *bosque de verdad*.",
+    details:
+      `*Gotcha Los Patos*
 52743 La Marquesa, Estado de México
-(A ~30 min de CDMX por México–Toluca)
 
-🗺️ Maps: https://maps.google.com/?q=Gotcha+Los+Patos+52743+La+Marquesa`;
+🗺️ Maps: https://maps.google.com/?q=Gotcha+Los+Patos+52743+La+Marquesa`,
+    invite:
+      "Cuando vengas, trae ropa cómoda, buena vibra y ganas de pasarla increíble. ¿Quieres que alguien del equipo te guíe con indicaciones? Escribe *asesor*. ¡Nos vemos en el campo! 🎯",
+  });
+
+const REPLY_RESERVE = () =>
+  buildReply({
+    opener: pick([
+      "¡Esa es la actitud! 🎯 Vamos a apartar tu misión.",
+      "¡Me encanta! 🔥 Tu aventura en el bosque está a un paso.",
+    ]),
+    explain:
+      "Reservar es rapidísimo y así te aseguras tu horario — sobre todo fines de semana y fechas especiales. Con $300 MXN de anticipo ya tienes tu lugar; el resto lo liquidas el día que llegues, sin sorpresas.",
+    details:
+      `*Así de fácil:*
+1️⃣ Entra a nuestra web
+2️⃣ Elige paquete, fecha y horario
+3️⃣ Paga el anticipo con Mercado Pago
+
+🔗 ${SITE}`,
+    invite:
+      "En cuanto se apruebe el pago te confirmamos por aquí y por correo. Imagina contarle a tus amigos que el sábado van al bosque a hacer historia — *ese puede ser tu próximo plan*. ¡Te esperamos! 🌲",
+  });
+
+const REPLY_PERSONAL = () =>
+  buildReply({
+    opener: "¡Por supuesto! 🤝 Tu evento merece atención de verdad.",
+    explain:
+      "Para cumpleaños, empresas, despedidas, grupos grandes o cualquier idea que quieras armar a tu manera, tenemos gente del equipo que te ayuda personalmente — cotizaciones, horarios flexibles y detalles que el bot no puede cubrir.",
+    details:
+      `Escríbeles directo aquí:\n📱 *${PERSONAL_DISPLAY}*\nhttps://wa.me/${PERSONAL_PHONE}`,
+    invite:
+      "Cuéntales qué tienes en mente y te ayudan a que tu grupo se sienta *único*. ¡Va a quedar una experiencia que van a recordar mucho tiempo! 🎯",
+  });
+
+const REPLY_UNKNOWN = () =>
+  buildReply({
+    opener: pick([
+      "¡Oye! 👋 Perdón, no alcancé a entenderte bien.",
+      "¡Hola de nuevo! 😊 Creo que se me pasó tu mensaje.",
+    ]),
+    explain:
+      "Estoy aquí para platicarte de Gotcha Los Patos — el paintball en bosque cerca de la CDMX donde cada visita se siente especial. Cuéntame qué buscas y con gusto te oriento.",
+    details:
+      `Puedes escribir:\n• *menu* — ver todas las opciones\n• *precios* · *horarios* · *ubicacion* · *reservar*`,
+    invite:
+      `¿Prefieres que te atienda alguien del equipo? Escribe *asesor* 📱\n\nO reserva directo: ${SITE}`,
+  });
 
 function matches(text, keywords) {
   return keywords.some((k) => text.includes(k));
@@ -69,22 +171,40 @@ async function lookupBookingsByPhone(phone) {
 async function buildStatusReply(phone) {
   const bookings = await lookupBookingsByPhone(phone);
   if (bookings.length === 0) {
-    return (
-      `No encontré reservas con este número de WhatsApp.\n\n` +
-      `Si reservaste con otro teléfono, escríbenos desde ese número o reserva en:\n${SITE}`
-    );
+    return buildReply({
+      opener: "¡Hola! 👋 Revisé por aquí y no encontré reservas con este número.",
+      explain:
+        "A veces pasa si reservaste con otro teléfono o aún no has apartado tu fecha. Si quieres vivir la experiencia en el bosque, te conviene reservar pronto — los fines de semana se llenan rápido.",
+      details: `Puedes reservar en:\n${SITE}`,
+      invite:
+        "¿Necesitas ayuda? Escribe *asesor* y alguien del equipo te apoya. ¡Ojalá pronto te veamos en el campo! 🎯",
+    });
   }
 
+  const firstName = bookings[0].name?.split(" ")[0] || "campeón";
   const lines = bookings.map((b) => {
     const st = statusLabel(b.status, b.payment_status);
-    return (
-      `• *${b.package_name}*\n` +
-      `  ${b.date} · ${b.slot_time}\n` +
-      `  ${st}`
-    );
+    return `• *${b.package_name}*\n  ${b.date} · ${b.slot_time}\n  ${st}`;
   });
 
-  return `📋 *Tus reservas recientes:*\n\n${lines.join("\n\n")}`;
+  const hasConfirmed = bookings.some(
+    (b) => b.status === "confirmed" || b.payment_status === "approved",
+  );
+
+  return buildReply({
+    opener: `¡Hola *${firstName}*! 👋 Qué gusto saludarte de nuevo.`,
+    explain: hasConfirmed
+      ? "Ya tienes todo listo para tu misión — solo falta que llegue el día y disfrutes con tu gente. Trae ropa cómoda, buena actitud y ganas de pasarla increíble."
+      : "Vi que tienes una reserva en proceso — en cuanto completes el pago te confirmamos al instante y tu lugar queda asegurado.",
+    details: `📋 *Tus reservas:*\n\n${lines.join("\n\n")}`,
+    invite:
+      "¿Alguna duda antes del gran día? Escríbenos *asesor* o responde aquí. ¡Te esperamos en La Marquesa! 🌲",
+  });
+}
+
+async function sendWelcome(from) {
+  await sendText(from, `${pick(WELCOME_OPENER)}\n\n${pick(WELCOME_PITCH)}`);
+  await sendText(from, MENU_OPTIONS);
 }
 
 async function handleIncomingMessage(from, text) {
@@ -93,8 +213,41 @@ async function handleIncomingMessage(from, text) {
 
   if (
     matches(msg, [
+      "asesor",
+      "asesora",
+      "atencion personal",
+      "atención personal",
+      "personalizada",
+      "personalizado",
+      "humano",
+      "persona real",
+      "hablar con alguien",
+      "hablar con una persona",
+      "agente",
+      "operador",
+      "cotizacion",
+      "cotización",
+      "cotizar",
+      "evento especial",
+      "evento corporativo",
+      "empresa",
+      "corporativo",
+      "cumpleaños",
+      "cumpleanos",
+      "despedida",
+      "grupo grande",
+    ])
+  ) {
+    await sendText(from, REPLY_PERSONAL());
+    return;
+  }
+
+  if (
+    matches(msg, [
       "hola",
       "buenas",
+      "buen dia",
+      "buen día",
       "menu",
       "menú",
       "ayuda",
@@ -102,48 +255,41 @@ async function handleIncomingMessage(from, text) {
       "info",
       "inicio",
       "start",
+      "hey",
+      "que tal",
+      "qué tal",
     ])
   ) {
-    await sendText(from, MENU);
+    await sendWelcome(from);
     return;
   }
 
-  if (matches(msg, ["horario", "horarios", "hora", "schedule", "abierto"])) {
-    await sendText(from, SCHEDULE);
+  if (matches(msg, ["horario", "horarios", "hora", "schedule", "abierto", "abren"])) {
+    await sendText(from, REPLY_SCHEDULE());
     return;
   }
 
-  if (matches(msg, ["precio", "precios", "paquete", "paquetes", "costo", "cuanto", "cuánto"])) {
-    await sendText(from, PRICES);
+  if (matches(msg, ["precio", "precios", "paquete", "paquetes", "costo", "cuanto", "cuánto", "promo", "promocion", "promoción"])) {
+    await sendText(from, REPLY_PRICES());
     return;
   }
 
-  if (matches(msg, ["ubicacion", "ubicación", "direccion", "dirección", "donde", "dónde", "llegar", "mapa"])) {
-    await sendText(from, LOCATION);
+  if (matches(msg, ["ubicacion", "ubicación", "direccion", "dirección", "donde", "dónde", "llegar", "mapa", "como llego", "cómo llego"])) {
+    await sendText(from, REPLY_LOCATION());
     return;
   }
 
-  if (matches(msg, ["reservar", "reserva", "reservacion", "reservación", "book", "cita"])) {
-    await sendText(
-      from,
-      `🎯 *Reservar tu misión*\n\n` +
-        `Entra a nuestra web, elige paquete, fecha y horario, y paga el anticipo de $300 MXN con Mercado Pago:\n\n` +
-        `${SITE}\n\n` +
-        `Te confirmaremos por WhatsApp y correo cuando el pago sea aprobado.`,
-    );
+  if (matches(msg, ["reservar", "reserva", "reservacion", "reservación", "book", "cita", "apartar", "fecha"])) {
+    await sendText(from, REPLY_RESERVE());
     return;
   }
 
-  if (matches(msg, ["estado", "reserva", "mis reservas", "confirmacion", "confirmación"])) {
-    const reply = await buildStatusReply(from);
-    await sendText(from, reply);
+  if (matches(msg, ["estado", "mis reservas", "confirmacion", "confirmación", "mi reserva"])) {
+    await sendText(from, await buildStatusReply(from));
     return;
   }
 
-  await sendText(
-    from,
-    `No entendí tu mensaje. Escribe *menu* para ver opciones o *reservar* para ir a la web:\n${SITE}`,
-  );
+  await sendText(from, REPLY_UNKNOWN());
 }
 
-module.exports = { handleIncomingMessage, MENU };
+module.exports = { handleIncomingMessage, sendWelcome };
