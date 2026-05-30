@@ -3,6 +3,12 @@
   "installCommand": "npm install --prefix frontend --legacy-peer-deps",
   "buildCommand": "npm run build --prefix frontend",
   "outputDirectory": "frontend/build",
+  "crons": [
+    {
+      "path": "/api/cancel-expired-bookings",
+      "schedule": "*/15 * * * *"
+    }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/|static/).*)", "destination": "/index.html" }

@@ -11,6 +11,10 @@ POSTGRES_URL_NON_POOLING="tu-connection-string" node apply-migration.mjs
 
 O en Supabase Dashboard → SQL → pegar `migrations/002_mercadopago_payments.sql`.
 
+**Reservas expiradas (4 h sin pago):** pegar también `migrations/003_cancel_expired_bookings.sql` en SQL Editor, o correr `apply-migration.mjs` (aplica todas las migraciones en orden).
+
+En Vercel agrega `CRON_SECRET` (Pro) y opcional `BOOKING_EXPIRY_HOURS=4`. El cron `/api/cancel-expired-bookings` corre cada 15 minutos.
+
 ## 2. Secrets (Supabase → Edge Functions → Secrets)
 
 | Secret | Descripción |

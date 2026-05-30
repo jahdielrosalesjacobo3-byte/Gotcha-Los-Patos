@@ -1,6 +1,7 @@
 const { getServiceClient } = require("./lib/supabase");
 const { createCheckoutPreference } = require("./lib/mercadopago");
 const { sendProcessingEmail } = require("./lib/email");
+const { cancelExpiredBookings } = require("./lib/cancel-expired-bookings");
 const {
   notifyBookingProcessing,
   notifyAdminNewBooking,
@@ -47,6 +48,12 @@ module.exports = async function handler(req, res) {
   try {
     const body = validate(req.body);
     const supabase = getServiceClient();
+
+    try {
+      await cancelExpiredBookings(supabase);
+    } catch (expiryErr) {
+      console.error("[checkout] cancel-expired:", expiryErr);
+    }
 
     const { data: booking, error: insertError } = await supabase
       .from("bookings")
