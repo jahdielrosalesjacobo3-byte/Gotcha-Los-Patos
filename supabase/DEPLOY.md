@@ -13,7 +13,7 @@ O en Supabase Dashboard → SQL → pegar `migrations/002_mercadopago_payments.s
 
 **Reservas expiradas (4 h sin pago):** pegar también `migrations/003_cancel_expired_bookings.sql` en SQL Editor, o correr `apply-migration.mjs` (aplica todas las migraciones en orden).
 
-En Vercel agrega `CRON_SECRET` (Pro) y opcional `BOOKING_EXPIRY_HOURS=4`. El cron `/api/cancel-expired-bookings` corre cada 15 minutos.
+En Vercel agrega `CRON_SECRET` (opcional) y `BOOKING_EXPIRY_HOURS=4`. El cron `/api/cancel-expired-bookings` corre **1 vez al día** (plan Hobby). Además se limpia al crear reservas y el calendario ignora slots expirados tras 4 h.
 
 ## 2. Secrets (Supabase → Edge Functions → Secrets)
 
