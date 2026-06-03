@@ -149,11 +149,15 @@ const REPLY_UNKNOWN = () =>
       `¿Prefieres que te atienda alguien del equipo? Escribe *asesor* 📱\n\nO reserva directo: ${SITE}`,
   });
 
+const BOT_VERSION = "2026-05-22-v2";
+
 function normalizeForMatch(text) {
   return (text || "")
+    .normalize("NFKC")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
     .replace(/[^\w\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -168,6 +172,22 @@ function wantsPersonalAttention(text) {
   const msg = normalizeForMatch(text);
   if (!msg) return false;
 
+  // Frases naturales más comunes (prioridad alta)
+  if (
+    (msg.includes("quiero") ||
+      msg.includes("necesito") ||
+      msg.includes("busco") ||
+      msg.includes("deseo") ||
+      msg.includes("quisiera") ||
+      msg.includes("me gustaria")) &&
+    msg.includes("atencion")
+  ) {
+    return true;
+  }
+
+  if (msg.includes("atencion") && msg.includes("personal")) return true;
+  if (msg.includes("personaliz")) return true;
+
   const keywords = [
     "asesor",
     "asesora",
@@ -176,7 +196,6 @@ function wantsPersonalAttention(text) {
     "atencion personalizada",
     "personalizada",
     "personalizado",
-    "personalizad",
     "humano",
     "humana",
     "persona real",
@@ -207,11 +226,12 @@ function wantsPersonalAttention(text) {
     "me atiendan",
     "quiero persona",
     "necesito persona",
+    "no entiendes",
+    "no me entiendes",
   ];
 
   if (keywords.some((k) => msg.includes(k))) return true;
-  if (msg.includes("personaliz")) return true;
-  if (msg.includes("atencion") && msg.includes("personal")) return true;
+
   if (
     msg.includes("hablar") &&
     (msg.includes("alguien") || msg.includes("persona") || msg.includes("humano"))
@@ -233,6 +253,45 @@ function wantsPersonalAttention(text) {
   }
 
   return false;
+}
+
+function classifyMessage(text) {
+  const raw = (text || "").trim();
+  if (!raw) return "empty";
+  if (wantsPersonalAttention(raw)) return "personal";
+  if (
+    matches(raw, [
+      "hola",
+      "buenas",
+      "buen dia",
+      "menu",
+      "ayuda",
+      "help",
+      "info",
+      "inicio",
+      "start",
+      "hey",
+      "que tal",
+    ])
+  ) {
+    return "welcome";
+  }
+  if (matches(raw, ["horario", "horarios", "hora", "schedule", "abierto", "abren"])) {
+    return "schedule";
+  }
+  if (matches(raw, ["precio", "precios", "paquete", "paquetes", "costo", "cuanto", "promo", "promocion"])) {
+    return "prices";
+  }
+  if (matches(raw, ["ubicacion", "direccion", "donde", "llegar", "mapa", "como llego"])) {
+    return "location";
+  }
+  if (matches(raw, ["reservar", "reserva", "reservacion", "book", "cita", "apartar", "fecha"])) {
+    return "reserve";
+  }
+  if (matches(raw, ["estado", "mis reservas", "confirmacion", "mi reserva"])) {
+    return "status";
+  }
+  return "unknown";
 }
 
 async function lookupBookingsByPhone(phone) {
@@ -293,54 +352,40 @@ async function handleIncomingMessage(from, text) {
   const raw = (text || "").trim();
   if (!raw) return;
 
-  if (wantsPersonalAttention(raw)) {
+  const route = classifyMessage(raw);
+  console.log("[whatsapp-bot]", { version: BOT_VERSION, from, route, text: raw.slice(0, 120) });
+
+  if (route === "personal") {
     await sendText(from, REPLY_PERSONAL());
     return;
   }
 
-  if (
-    matches(raw, [
-      "hola",
-      "buenas",
-      "buen dia",
-      "buen día",
-      "menu",
-      "menú",
-      "ayuda",
-      "help",
-      "info",
-      "inicio",
-      "start",
-      "hey",
-      "que tal",
-      "qué tal",
-    ])
-  ) {
+  if (route === "welcome") {
     await sendWelcome(from);
     return;
   }
 
-  if (matches(raw, ["horario", "horarios", "hora", "schedule", "abierto", "abren"])) {
+  if (route === "schedule") {
     await sendText(from, REPLY_SCHEDULE());
     return;
   }
 
-  if (matches(raw, ["precio", "precios", "paquete", "paquetes", "costo", "cuanto", "promo", "promocion"])) {
+  if (route === "prices") {
     await sendText(from, REPLY_PRICES());
     return;
   }
 
-  if (matches(raw, ["ubicacion", "direccion", "donde", "llegar", "mapa", "como llego"])) {
+  if (route === "location") {
     await sendText(from, REPLY_LOCATION());
     return;
   }
 
-  if (matches(raw, ["reservar", "reserva", "reservacion", "book", "cita", "apartar", "fecha"])) {
+  if (route === "reserve") {
     await sendText(from, REPLY_RESERVE());
     return;
   }
 
-  if (matches(raw, ["estado", "mis reservas", "confirmacion", "mi reserva"])) {
+  if (route === "status") {
     await sendText(from, await buildStatusReply(from));
     return;
   }
@@ -349,8 +394,10 @@ async function handleIncomingMessage(from, text) {
 }
 
 module.exports = {
+  BOT_VERSION,
   handleIncomingMessage,
   sendWelcome,
   wantsPersonalAttention,
+  classifyMessage,
   normalizeForMatch,
 };
