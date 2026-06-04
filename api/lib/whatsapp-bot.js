@@ -43,8 +43,7 @@ const MENU_OPTIONS = `Cuéntame, ¿por dónde empezamos?
 3️⃣ *ubicacion* — Cómo llegar al campo
 4️⃣ *reservar* — Aparta tu fecha ya
 5️⃣ *estado* — Revisa tus reservas
-
-¿Cumpleaños, empresa o algo a la medida? Escribe *asesor* y te conectamos con el equipo.
+6️⃣ *asesor* — Atención personalizada (cumpleaños, empresas, grupos)
 
 🌐 Reserva directo: ${SITE}`;
 
@@ -144,12 +143,12 @@ const REPLY_UNKNOWN = () =>
     explain:
       "Estoy aquí para platicarte de Gotcha Los Patos — el paintball en bosque cerca de la CDMX donde cada visita se siente especial. Cuéntame qué buscas y con gusto te oriento.",
     details:
-      `Puedes escribir:\n• *menu* — ver todas las opciones\n• *precios* · *horarios* · *ubicacion* · *reservar*`,
+      `Puedes escribir:\n• *menu* — ver todas las opciones\n• *1*–*6* o palabras como *precios*, *horarios*, *asesor*`,
     invite:
       `¿Prefieres que te atienda alguien del equipo? Escribe *asesor* 📱\n\nO reserva directo: ${SITE}`,
   });
 
-const BOT_VERSION = "2026-05-22-v2";
+const BOT_VERSION = "2026-05-22-v3";
 
 function normalizeForMatch(text) {
   return (text || "")
@@ -255,9 +254,26 @@ function wantsPersonalAttention(text) {
   return false;
 }
 
+function menuNumberRoute(text) {
+  const n = normalizeForMatch(text);
+  const routes = {
+    "1": "schedule",
+    "2": "prices",
+    "3": "location",
+    "4": "reserve",
+    "5": "status",
+    "6": "personal",
+  };
+  return routes[n] || null;
+}
+
 function classifyMessage(text) {
   const raw = (text || "").trim();
   if (!raw) return "empty";
+
+  const byNumber = menuNumberRoute(raw);
+  if (byNumber) return byNumber;
+
   if (wantsPersonalAttention(raw)) return "personal";
   if (
     matches(raw, [

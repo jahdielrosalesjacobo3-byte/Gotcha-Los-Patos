@@ -125,7 +125,7 @@ Actualiza: foto, *about*, descripción, dirección, email, sitio web y categorí
 - `ubicacion` — Dirección + Maps  
 - `reservar` — Link a la web  
 - `estado` — Tus reservas (por número de WhatsApp)  
-- `asesor` — Atención personalizada → **+52 55 6032 6688** (`525560326688`)  
+- `6` / `asesor` — Atención personalizada → **+52 55 6032 6688** (`525560326688`)  
 
 Variable opcional: `WHATSAPP_PERSONAL_PHONE=525560326688` (número de atención humana).
 

@@ -12,6 +12,7 @@ const cases = [
   { text: "quiero atencion personalizada", expect: "personal" },
   { text: "Quiero atención personalizada", expect: "personal" },
   { text: "necesito atencion personalizada por favor", expect: "personal" },
+  { text: "6", expect: "personal" },
   { text: "asesor", expect: "personal" },
   { text: "hablar con alguien", expect: "personal" },
   { text: "hola", expect: "welcome" },
